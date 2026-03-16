@@ -226,18 +226,18 @@ An install script is provided at [`deployment/linux/install.sh`](./deployment/li
 
 #### Manual setup
 
-If you prefer to configure the service manually, a template service file is provided at [`deployment/systemd/capture.service`](./deployment/systemd/capture.service).
+If you prefer to configure the service manually, a template service file is provided at [`deployment/linux/capture.service`](./deployment/linux/capture.service).
 
 1. Edit the service file with your binary path, user, group, and secret key:
 
     ```shell
-    nano deployment/systemd/capture.service
+    nano deployment/linux/capture.service
     ```
 
 2. Copy it to the systemd unit directory:
 
     ```shell
-    cp deployment/systemd/capture.service /etc/systemd/system/
+    cp deployment/linux/capture.service /etc/systemd/system/
     ```
 
 3. Reload, enable, and start the service:
