@@ -26,6 +26,7 @@ Capture is a hardware monitoring agent that collects hardware information from t
   - [Helm](#helm)
   - [System Installation](#system-installation)
   - [Linux Systemd Service](#linux-systemd-service)
+  - [macOS Launchd Service](#macos-launchd-service)
   - [Windows Service](#windows-service)
   - [Reverse Proxy and SSL](#reverse-proxy-and-ssl)
     - [Caddy](#caddy)
@@ -252,6 +253,95 @@ If you prefer to configure the service manually, a template service file is prov
 
     ```shell
     systemctl status capture
+    ```
+
+### macOS Launchd Service
+
+An install script is provided at [`deployment/macos/install.sh`](./deployment/macos/install.sh). It automatically detects your CPU architecture, downloads the latest release from GitHub, installs the binary to `/usr/local/bin`, and registers a system-wide launchd daemon.
+
+**Requirements:** `curl`, `tar`, macOS, and root access via `sudo`.
+
+1. Download and run in one step:
+
+    ```shell
+    curl -fsSL https://raw.githubusercontent.com/bluewave-labs/capture/main/deployment/macos/install.sh | sudo bash
+    ```
+
+    The script will prompt you for `API_SECRET` if it is not supplied as an argument.
+
+2. Supply options inline if preferred:
+
+    ```shell
+    curl -fsSL https://raw.githubusercontent.com/bluewave-labs/capture/main/deployment/macos/install.sh \
+        | sudo bash -s -- --api-secret "your-secret-key"
+    ```
+
+3. All available options:
+
+    ```shell
+    curl -fsSL https://raw.githubusercontent.com/bluewave-labs/capture/main/deployment/macos/install.sh \
+        | sudo bash -s -- \
+            --api-secret "your-secret-key" \
+            --port 59232 \
+            --install-dir /usr/local/bin \
+            --service-name com.bluewavelabs.capture
+    ```
+
+    Or download the script first and run it locally:
+
+    ```shell
+    curl -fsSL -o install.sh https://raw.githubusercontent.com/bluewave-labs/capture/main/deployment/macos/install.sh
+    sudo bash install.sh --api-secret "your-secret-key"
+    ```
+
+4. Full option reference:
+
+    | Option           | Description                              | Default                      |
+    | ---------------- | ---------------------------------------- | ---------------------------- |
+    | `--api-secret`   | Authentication key (required)            | *(prompted)*                 |
+    | `--port`         | Port the agent listens on                | `59232`                      |
+    | `--install-dir`  | Directory to install the binary          | `/usr/local/bin`             |
+    | `--service-name` | launchd label and plist filename         | `com.bluewavelabs.capture`   |
+
+5. After installation, manage the service with `launchctl`:
+
+    ```shell
+    sudo launchctl load /Library/LaunchDaemons/com.bluewavelabs.capture.plist
+    sudo launchctl start com.bluewavelabs.capture
+    sudo launchctl list | grep com.bluewavelabs.capture
+    tail -f /var/log/com.bluewavelabs.capture.log
+    ```
+
+<!-- markdownlint-disable MD024 -->
+#### Manual setup
+
+If you prefer to configure the service manually, a template plist is provided at [`deployment/macos/capture.plist`](./deployment/macos/capture.plist).
+
+1. Edit the plist with your binary path, working directory, secret key, and any other settings you need:
+
+    ```shell
+    nano deployment/macos/capture.plist
+    ```
+
+2. Copy it to the launchd daemon directory and set the required permissions:
+
+    ```shell
+    cp deployment/macos/capture.plist /Library/LaunchDaemons/com.bluewavelabs.capture.plist
+    chown root:wheel /Library/LaunchDaemons/com.bluewavelabs.capture.plist
+    chmod 644 /Library/LaunchDaemons/com.bluewavelabs.capture.plist
+    ```
+
+3. Load and start the service:
+
+    ```shell
+    sudo launchctl load /Library/LaunchDaemons/com.bluewavelabs.capture.plist
+    sudo launchctl start com.bluewavelabs.capture
+    ```
+
+4. Verify the service is running:
+
+    ```shell
+    sudo launchctl list | grep com.bluewavelabs.capture
     ```
 
 ### Windows Service
