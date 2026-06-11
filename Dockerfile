@@ -1,21 +1,21 @@
-# Use golang:1.25-alpine as the base image.
+# Capture agent image — Debian runtime for update-ca-certificates and /etc/compliwise volumes.
 FROM golang:1.25-alpine AS builder
 COPY . /app
-# Change directory and build the binary. Build command is also used to download the dependencies.
 RUN cd /app && go build -o capture ./cmd/capture
 
-# Use chainguard/static:latest-glibc as the base image.
-# This image is a minimal static image, which is suitable for running Go applications.
-FROM chainguard/static:latest-glibc
-COPY --from=builder /app/capture /usr/bin/
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+  && rm -rf /var/lib/apt/lists/*
 
-# Set the default GIN_MODE to release, so that the application runs in production mode. However, this can be overridden by setting the GIN_MODE environment variable.
-# https://docs.docker.com/reference/dockerfile/#env
+COPY --from=builder /app/capture /usr/bin/capture
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+VOLUME ["/etc/compliwise", "/usr/local/share/ca-certificates"]
 ENV GIN_MODE=release
-
-# https://docs.docker.com/reference/dockerfile/#stopsignal
-STOPSIGNAL SIGINT
-
-# https://docs.docker.com/reference/dockerfile/#expose
+ENV PORT=59232
 EXPOSE 59232
-CMD ["/usr/bin/capture"]
+STOPSIGNAL SIGINT
+ENTRYPOINT ["/entrypoint.sh"]

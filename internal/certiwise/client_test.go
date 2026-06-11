@@ -7,12 +7,11 @@ import (
 	"testing"
 )
 
-func TestNewClientUsesProxyFromEnvironment(t *testing.T) {
-	t.Setenv("HTTPS_PROXY", "http://127.0.0.1:9")
-
+func TestNewClientUsesExplicitProxyURL(t *testing.T) {
 	client, err := NewClient(ClientConfig{
 		BaseURL:    "https://api.example.com",
 		AgentToken: "token",
+		ProxyURL:   "http://127.0.0.1:9",
 	})
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)
@@ -28,7 +27,7 @@ func TestNewClientUsesProxyFromEnvironment(t *testing.T) {
 		t.Fatalf("Proxy: %v", err)
 	}
 	if proxyURL == nil || proxyURL.Host != "127.0.0.1:9" {
-		t.Fatalf("expected HTTPS_PROXY, got %v", proxyURL)
+		t.Fatalf("expected configured proxy, got %v", proxyURL)
 	}
 }
 
