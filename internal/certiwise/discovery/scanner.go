@@ -15,6 +15,14 @@ func Scan(opts ScanOptions) []DiscoveredItem {
 	if len(candidates) < maxItems {
 		candidates = append(candidates, ScanAssignmentPaths(opts.Assignments, maxItems-len(candidates))...)
 	}
+	if len(candidates) < maxItems && opts.TLSListener.Enabled {
+		remaining := maxItems - len(candidates)
+		tlsItems := ScanTLSListeners(opts.TLSListener)
+		if len(tlsItems) > remaining {
+			tlsItems = tlsItems[:remaining]
+		}
+		candidates = append(candidates, tlsItems...)
+	}
 
 	seen := make(map[string]struct{}, len(candidates))
 	merged := make([]DiscoveredItem, 0, len(candidates))

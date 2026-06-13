@@ -19,6 +19,8 @@ const (
 	defaultDiscoveryPemPaths     = "/usr/local/share/ca-certificates"
 	defaultProbeInterval         = 5 * time.Minute
 	defaultProbeTimeout          = 10 * time.Second
+	defaultDiscoveryTLSTimeout   = 3 * time.Second
+	minDiscoveryTLSTimeout       = 500 * time.Millisecond
 	minProbeInterval             = 30 * time.Second
 	minProbeTimeout              = time.Second
 )
@@ -45,6 +47,13 @@ type Config struct {
 	DiscoveryPemPaths []string
 	DiscoveryMaxItems int
 	DiscoveryPostDeploy bool
+	DiscoveryTLSEnabled bool
+	DiscoveryTLSPorts []int
+	DiscoveryTLSPortsExplicit bool
+	DiscoveryTLSPortRange string
+	DiscoveryTLSHosts []string
+	DiscoveryTLSTimeout time.Duration
+	DiscoveryTLSInsecure bool
 	ProbeEnabled      bool
 	ProbeInterval     time.Duration
 	ProbeTimeout      time.Duration
@@ -96,6 +105,13 @@ func Load() (*Config, error) {
 		DiscoveryPemPaths:  discoveryPemPathsFromEnv(merged),
 		DiscoveryMaxItems:   discoveryMaxItemsFromEnv(merged),
 		DiscoveryPostDeploy: discoveryPostDeployFromEnv(merged),
+		DiscoveryTLSEnabled: discoveryTLSEnabledFromEnv(merged),
+		DiscoveryTLSPorts:   discoveryTLSPortsFromEnv(merged),
+		DiscoveryTLSPortsExplicit: strings.TrimSpace(merged["COMPLIWISE_DISCOVERY_TLS_PORTS"]) != "",
+		DiscoveryTLSPortRange: strings.TrimSpace(merged["COMPLIWISE_DISCOVERY_TLS_PORT_RANGE"]),
+		DiscoveryTLSHosts:     discoveryTLSHostsFromEnv(merged),
+		DiscoveryTLSTimeout:   discoveryTLSTimeoutFromEnv(merged),
+		DiscoveryTLSInsecure:  discoveryTLSInsecureFromEnv(merged),
 		ProbeEnabled:        probeEnabledFromEnv(merged),
 		ProbeInterval:       probeIntervalFromEnv(merged),
 		ProbeTimeout:        probeTimeoutFromEnv(merged),
@@ -199,6 +215,74 @@ func discoveryMaxItemsFromEnv(values map[string]string) int {
 
 func discoveryPostDeployFromEnv(values map[string]string) bool {
 	raw := strings.TrimSpace(values["COMPLIWISE_DISCOVERY_POST_DEPLOY"])
+	if raw == "" {
+		return true
+	}
+	return !strings.EqualFold(raw, "false")
+}
+
+func discoveryTLSEnabledFromEnv(values map[string]string) bool {
+	raw := strings.TrimSpace(values["COMPLIWISE_DISCOVERY_TLS_ENABLED"])
+	if raw == "" {
+		return true
+	}
+	return !strings.EqualFold(raw, "false")
+}
+
+func discoveryTLSPortsFromEnv(values map[string]string) []int {
+	raw := strings.TrimSpace(values["COMPLIWISE_DISCOVERY_TLS_PORTS"])
+	if raw == "" {
+		return nil
+	}
+	parts := strings.Split(raw, ",")
+	ports := make([]int, 0, len(parts))
+	for _, part := range parts {
+		trimmed := strings.TrimSpace(part)
+		if trimmed == "" {
+			continue
+		}
+		value, err := strconv.Atoi(trimmed)
+		if err != nil || value < 1 || value > 65535 {
+			continue
+		}
+		ports = append(ports, value)
+	}
+	return ports
+}
+
+func discoveryTLSHostsFromEnv(values map[string]string) []string {
+	raw := strings.TrimSpace(values["COMPLIWISE_DISCOVERY_TLS_HOSTS"])
+	if raw == "" {
+		return []string{"127.0.0.1", "::1"}
+	}
+	parts := strings.Split(raw, ",")
+	hosts := make([]string, 0, len(parts))
+	for _, part := range parts {
+		trimmed := strings.TrimSpace(part)
+		if trimmed != "" {
+			hosts = append(hosts, trimmed)
+		}
+	}
+	if len(hosts) == 0 {
+		return []string{"127.0.0.1", "::1"}
+	}
+	return hosts
+}
+
+func discoveryTLSTimeoutFromEnv(values map[string]string) time.Duration {
+	raw := strings.TrimSpace(values["COMPLIWISE_DISCOVERY_TLS_TIMEOUT"])
+	if raw == "" {
+		return defaultDiscoveryTLSTimeout
+	}
+	parsed, err := time.ParseDuration(raw)
+	if err != nil || parsed < minDiscoveryTLSTimeout {
+		return defaultDiscoveryTLSTimeout
+	}
+	return parsed
+}
+
+func discoveryTLSInsecureFromEnv(values map[string]string) bool {
+	raw := strings.TrimSpace(values["COMPLIWISE_DISCOVERY_TLS_INSECURE"])
 	if raw == "" {
 		return true
 	}

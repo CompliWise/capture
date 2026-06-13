@@ -108,6 +108,77 @@ func TestLoadDiscoveryConfigDefaults(t *testing.T) {
 	}
 }
 
+func TestLoadDiscoveryTLSConfigDefaults(t *testing.T) {
+	dir := t.TempDir()
+	envPath := filepath.Join(dir, "agent.env")
+	if err := os.WriteFile(envPath, []byte("COMPLIWISE_API_URL=http://file.example\n"), 0o600); err != nil {
+		t.Fatalf("write env file: %v", err)
+	}
+	t.Setenv("COMPLIWISE_AGENT_ENV_FILE", envPath)
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if !cfg.DiscoveryTLSEnabled {
+		t.Fatal("expected TLS listener discovery enabled by default")
+	}
+	if cfg.DiscoveryTLSPorts != nil {
+		t.Fatalf("expected nil static ports for default list fallback, got %#v", cfg.DiscoveryTLSPorts)
+	}
+	if cfg.DiscoveryTLSPortsExplicit {
+		t.Fatal("expected explicit ports flag false when env unset")
+	}
+	if cfg.DiscoveryTLSTimeout != 3*time.Second {
+		t.Fatalf("expected 3s TLS timeout, got %s", cfg.DiscoveryTLSTimeout)
+	}
+	if !cfg.DiscoveryTLSInsecure {
+		t.Fatal("expected TLS insecure enabled by default")
+	}
+	if len(cfg.DiscoveryTLSHosts) != 2 {
+		t.Fatalf("expected 2 default hosts, got %#v", cfg.DiscoveryTLSHosts)
+	}
+}
+
+func TestLoadDiscoveryTLSConfigOverrides(t *testing.T) {
+	dir := t.TempDir()
+	envPath := filepath.Join(dir, "agent.env")
+	if err := os.WriteFile(envPath, []byte(`COMPLIWISE_API_URL=http://file.example
+COMPLIWISE_DISCOVERY_TLS_ENABLED=false
+COMPLIWISE_DISCOVERY_TLS_PORTS=9443,10443
+COMPLIWISE_DISCOVERY_TLS_PORT_RANGE=8000-8010
+COMPLIWISE_DISCOVERY_TLS_HOSTS=127.0.0.1
+COMPLIWISE_DISCOVERY_TLS_TIMEOUT=2s
+COMPLIWISE_DISCOVERY_TLS_INSECURE=false
+`), 0o600); err != nil {
+		t.Fatalf("write env file: %v", err)
+	}
+	t.Setenv("COMPLIWISE_AGENT_ENV_FILE", envPath)
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if cfg.DiscoveryTLSEnabled {
+		t.Fatal("expected TLS listener discovery disabled")
+	}
+	if !cfg.DiscoveryTLSPortsExplicit {
+		t.Fatal("expected explicit ports flag true when env set")
+	}
+	if len(cfg.DiscoveryTLSPorts) != 2 || cfg.DiscoveryTLSPorts[0] != 9443 {
+		t.Fatalf("unexpected TLS ports: %#v", cfg.DiscoveryTLSPorts)
+	}
+	if cfg.DiscoveryTLSPortRange != "8000-8010" {
+		t.Fatalf("unexpected port range: %q", cfg.DiscoveryTLSPortRange)
+	}
+	if cfg.DiscoveryTLSTimeout != 2*time.Second {
+		t.Fatalf("expected 2s TLS timeout, got %s", cfg.DiscoveryTLSTimeout)
+	}
+	if cfg.DiscoveryTLSInsecure {
+		t.Fatal("expected TLS insecure disabled")
+	}
+}
+
 func TestLoadProbeConfigDefaults(t *testing.T) {
 	dir := t.TempDir()
 	envPath := filepath.Join(dir, "agent.env")

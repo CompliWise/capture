@@ -14,9 +14,9 @@ import (
 
 // Scheduler coordinates discovery scan triggers.
 type Scheduler struct {
-	mu             sync.Mutex
+	mu              sync.Mutex
 	lastLocalScanAt time.Time
-	licenseLogger  LicenseDeniedLogger
+	licenseLogger   LicenseDeniedLogger
 }
 
 // NewScheduler creates a discovery scheduler.
@@ -115,6 +115,17 @@ func (s *Scheduler) runScan(
 		PemPaths:    cfg.DiscoveryPemPaths,
 		MaxItems:    cfg.DiscoveryMaxItems,
 		Assignments: assignmentsFromPull(pull),
+		TLSListener: TLSListenerOptions{
+			Enabled:             cfg.DiscoveryTLSEnabled,
+			Hosts:               cfg.DiscoveryTLSHosts,
+			StaticPorts:         cfg.DiscoveryTLSPorts,
+			StaticPortsExplicit: cfg.DiscoveryTLSPortsExplicit,
+			PortRange:           cfg.DiscoveryTLSPortRange,
+			Timeout:             cfg.DiscoveryTLSTimeout,
+			Insecure:            cfg.DiscoveryTLSInsecure,
+			MaxWorkers:          5,
+			Assignments:         pull.Assignments,
+		},
 	}
 
 	err := PostDiscoveryScan(client, opts, &s.licenseLogger)
@@ -138,10 +149,11 @@ func assignmentsFromPull(pull *certiwise.AssignmentsPullResponse) []AssignmentRe
 	assignments := make([]AssignmentRef, 0, len(pull.Assignments))
 	for _, item := range pull.Assignments {
 		assignments = append(assignments, AssignmentRef{
-			Alias:          item.Config.Alias,
-			TrustStorePath: item.Config.TrustStorePath,
-			CertFileName:   item.Config.CertFileName,
-			TrustStoreType: item.TrustStoreType,
+			Alias:            item.Config.Alias,
+			TrustStorePath:   item.Config.TrustStorePath,
+			CertFileName:     item.Config.CertFileName,
+			TrustStoreType:   item.TrustStoreType,
+			VerifyEndpoint:   item.Config.VerifyEndpoint,
 		})
 	}
 	return assignments
