@@ -33,6 +33,17 @@ type TlsHandshakePayload struct {
 	DurationMs           int      `json:"durationMs"`
 }
 
+// SyntheticCheckPayload is the synthetic.check event payload.
+type SyntheticCheckPayload struct {
+	MonitorID         string  `json:"monitorId"`
+	Status            string  `json:"status"`
+	ResponseTimeMs    *int    `json:"responseTimeMs"`
+	CertExpiresAt     *string `json:"certExpiresAt"`
+	CertDaysRemaining *int    `json:"certDaysRemaining"`
+	HTTPStatusCode    *int    `json:"httpStatusCode"`
+	ErrorMessage      *string `json:"errorMessage"`
+}
+
 // DiscoveryScanPayload is the discovery.scan event payload.
 type DiscoveryScanPayload struct {
 	CertificatesFound int                 `json:"certificatesFound"`

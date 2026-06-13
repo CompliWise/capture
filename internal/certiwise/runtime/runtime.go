@@ -12,6 +12,7 @@ import (
 	"github.com/bluewave-labs/capture/internal/certiwise/discovery"
 	"github.com/bluewave-labs/capture/internal/certiwise/probe"
 	"github.com/bluewave-labs/capture/internal/certiwise/store"
+	"github.com/bluewave-labs/capture/internal/certiwise/synthetic"
 )
 
 // Start launches the CompliWise control-plane loop when COMPLIWISE_API_URL is configured.
@@ -88,6 +89,15 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 	discoveryScheduler := discovery.NewScheduler()
 	probeScheduler := probe.NewScheduler()
 
+	var syntheticRunner *synthetic.Runner
+	if cfg.SyntheticEnabled {
+		syntheticRunner = synthetic.NewRunner(cfg.SyntheticMaxWorkers)
+		defer syntheticRunner.StopAll()
+		if err := synthetic.SyncMonitors(ctx, client, syntheticRunner, cfg, agentVersion); err != nil {
+			log.Printf("certiwise: initial synthetic monitor sync failed: %v", err)
+		}
+	}
+
 	probe.RegisterManualRunner(func(ctx context.Context) (int, error) {
 		pull, err := client.PullAssignments()
 		if err != nil {
@@ -138,6 +148,14 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 		probeTicker = time.NewTicker(cfg.ProbeInterval)
 		defer probeTicker.Stop()
 		probeC = probeTicker.C
+	}
+
+	var syntheticTicker *time.Ticker
+	var syntheticC <-chan time.Time
+	if cfg.SyntheticEnabled && syntheticRunner != nil {
+		syntheticTicker = time.NewTicker(cfg.SyntheticSyncInterval)
+		defer syntheticTicker.Stop()
+		syntheticC = syntheticTicker.C
 	}
 
 	for {
@@ -196,6 +214,13 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 			}
 			if err := probeScheduler.RunIfDue(ctx, client, cfg, pull); err != nil {
 				log.Printf("certiwise: scheduled TLS probe failed: %v", err)
+			}
+		case <-syntheticC:
+			if syntheticC == nil || syntheticRunner == nil {
+				continue
+			}
+			if err := synthetic.SyncMonitors(ctx, client, syntheticRunner, cfg, agentVersion); err != nil {
+				log.Printf("certiwise: scheduled synthetic monitor sync failed: %v", err)
 			}
 		}
 	}
