@@ -3,6 +3,7 @@ package certiwise
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -43,9 +44,28 @@ type AssignmentPullItem struct {
 
 // AssignmentsPullResponse is the body of GET /agent/assignments.
 type AssignmentsPullResponse struct {
-	Etag        string               `json:"etag"`
-	ConfigEtag  string               `json:"configEtag"`
-	Assignments []AssignmentPullItem `json:"assignments"`
+	Etag                     string               `json:"etag"`
+	ConfigEtag               string               `json:"configEtag"`
+	Assignments              []AssignmentPullItem `json:"assignments"`
+	DiscoveryScanRequestedAt *string              `json:"discoveryScanRequestedAt"`
+	LastDiscoveryScanAt      *string              `json:"lastDiscoveryScanAt"`
+}
+
+// DiscoveryRequestedAt returns the on-demand scan request timestamp, if any.
+func (r *AssignmentsPullResponse) DiscoveryRequestedAt() string {
+	return optionalString(r.DiscoveryScanRequestedAt)
+}
+
+// LastDiscoveryAt returns the last ingested discovery scan timestamp, if any.
+func (r *AssignmentsPullResponse) LastDiscoveryAt() string {
+	return optionalString(r.LastDiscoveryScanAt)
+}
+
+func optionalString(value *string) string {
+	if value == nil {
+		return ""
+	}
+	return strings.TrimSpace(*value)
 }
 
 // DeploymentReportRequest is the body for POST /agent/deployments/:id/report.

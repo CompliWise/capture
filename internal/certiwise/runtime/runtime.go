@@ -9,6 +9,7 @@ import (
 
 	"github.com/bluewave-labs/capture/internal/certiwise"
 	cwconfig "github.com/bluewave-labs/capture/internal/certiwise/config"
+	"github.com/bluewave-labs/capture/internal/certiwise/discovery"
 	"github.com/bluewave-labs/capture/internal/certiwise/store"
 )
 
@@ -83,8 +84,20 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 	}
 
 	tracker := newAssignmentTracker()
-	if err := syncAssignments(ctx, client, tracker); err != nil {
+	discoveryScheduler := discovery.NewScheduler()
+
+	pull, deploySucceeded, err := syncAssignments(ctx, client, tracker)
+	if err != nil {
 		log.Printf("certiwise: initial assignment sync failed: %v", err)
+	} else if pull != nil {
+		if err := discoveryScheduler.RunIfDue(ctx, client, cfg, pull); err != nil {
+			log.Printf("certiwise: discovery scan failed: %v", err)
+		}
+		if deploySucceeded {
+			if err := discoveryScheduler.RunPostDeploy(ctx, client, cfg, pull); err != nil {
+				log.Printf("certiwise: post-deploy discovery scan failed: %v", err)
+			}
+		}
 	}
 
 	heartbeatTicker := time.NewTicker(cfg.HeartbeatInterval)
@@ -92,6 +105,14 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 
 	pollTicker := time.NewTicker(cfg.PollInterval)
 	defer pollTicker.Stop()
+
+	var discoveryTicker *time.Ticker
+	var discoveryC <-chan time.Time
+	if cfg.DiscoveryEnabled {
+		discoveryTicker = time.NewTicker(cfg.DiscoveryInterval)
+		defer discoveryTicker.Stop()
+		discoveryC = discoveryTicker.C
+	}
 
 	for {
 		select {
@@ -102,8 +123,33 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 				log.Printf("certiwise: heartbeat failed: %v", err)
 			}
 		case <-pollTicker.C:
-			if err := syncAssignments(ctx, client, tracker); err != nil {
+			pull, deploySucceeded, err := syncAssignments(ctx, client, tracker)
+			if err != nil {
 				log.Printf("certiwise: assignment sync failed: %v", err)
+				continue
+			}
+			if pull == nil {
+				continue
+			}
+			if err := discoveryScheduler.RunIfDue(ctx, client, cfg, pull); err != nil {
+				log.Printf("certiwise: discovery scan failed: %v", err)
+			}
+			if deploySucceeded {
+				if err := discoveryScheduler.RunPostDeploy(ctx, client, cfg, pull); err != nil {
+					log.Printf("certiwise: post-deploy discovery scan failed: %v", err)
+				}
+			}
+		case <-discoveryC:
+			if discoveryC == nil {
+				continue
+			}
+			pull, err := client.PullAssignments()
+			if err != nil {
+				log.Printf("certiwise: discovery pull failed: %v", err)
+				continue
+			}
+			if err := discoveryScheduler.RunIfDue(ctx, client, cfg, pull); err != nil {
+				log.Printf("certiwise: scheduled discovery scan failed: %v", err)
 			}
 		}
 	}

@@ -11,7 +11,7 @@ import (
 )
 
 type assignmentTracker struct {
-	mu                 sync.Mutex
+	mu                   sync.Mutex
 	processedDeployments map[string]struct{}
 }
 
@@ -34,20 +34,21 @@ func (t *assignmentTracker) markSucceeded(deploymentID string) {
 	t.processedDeployments[deploymentID] = struct{}{}
 }
 
-func syncAssignments(ctx context.Context, client *certiwise.Client, tracker *assignmentTracker) error {
+func syncAssignments(
+	ctx context.Context,
+	client *certiwise.Client,
+	tracker *assignmentTracker,
+) (*certiwise.AssignmentsPullResponse, bool, error) {
 	if ctx.Err() != nil {
-		return ctx.Err()
+		return nil, false, ctx.Err()
 	}
 
 	pull, err := client.PullAssignments()
 	if err != nil {
-		return fmt.Errorf("pull assignments: %w", err)
+		return nil, false, fmt.Errorf("pull assignments: %w", err)
 	}
 
-	if len(pull.Assignments) == 0 {
-		return nil
-	}
-
+	deploySucceeded := false
 	for _, assignment := range pull.Assignments {
 		if tracker.isSucceeded(assignment.DeploymentID) {
 			continue
@@ -64,9 +65,10 @@ func syncAssignments(ctx context.Context, client *certiwise.Client, tracker *ass
 		}
 
 		tracker.markSucceeded(assignment.DeploymentID)
+		deploySucceeded = true
 	}
 
-	return nil
+	return pull, deploySucceeded, nil
 }
 
 func processAssignment(

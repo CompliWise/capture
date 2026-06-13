@@ -14,6 +14,9 @@ const (
 	DefaultAgentEnvPath          = "/etc/compliwise/agent.env"
 	defaultHeartbeatIntervalSecs = 60
 	defaultPollIntervalSecs      = 60
+	defaultDiscoveryMaxItems     = 500
+	defaultDiscoveryInterval     = 24 * time.Hour
+	defaultDiscoveryPemPaths     = "/usr/local/share/ca-certificates"
 )
 
 // Config holds CompliWise control-plane settings for the capture agent.
@@ -33,6 +36,11 @@ type Config struct {
 	APIPinSHA256      string
 	InsecureSkipVerify bool
 	AgentEnvPath      string
+	DiscoveryEnabled  bool
+	DiscoveryInterval time.Duration
+	DiscoveryPemPaths []string
+	DiscoveryMaxItems int
+	DiscoveryPostDeploy bool
 }
 
 // Load reads CompliWise settings from the persisted env file and process environment.
@@ -73,6 +81,11 @@ func Load() (*Config, error) {
 		APIPinSHA256:       strings.TrimSpace(merged["COMPLIWISE_API_PIN_SHA256"]),
 		InsecureSkipVerify: strings.EqualFold(merged["COMPLIWISE_INSECURE_SKIP_VERIFY"], "true"),
 		AgentEnvPath:       envPath,
+		DiscoveryEnabled:   discoveryEnabledFromEnv(merged),
+		DiscoveryInterval:  discoveryIntervalFromEnv(merged),
+		DiscoveryPemPaths:  discoveryPemPathsFromEnv(merged),
+		DiscoveryMaxItems:  discoveryMaxItemsFromEnv(merged),
+		DiscoveryPostDeploy: discoveryPostDeployFromEnv(merged),
 	}
 
 	return cfg, nil
@@ -112,4 +125,66 @@ func envOrDefault(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func discoveryEnabledFromEnv(values map[string]string) bool {
+	raw := strings.TrimSpace(values["COMPLIWISE_DISCOVERY_ENABLED"])
+	if raw == "" {
+		return true
+	}
+	return !strings.EqualFold(raw, "false")
+}
+
+func discoveryIntervalFromEnv(values map[string]string) time.Duration {
+	raw := strings.TrimSpace(values["COMPLIWISE_DISCOVERY_INTERVAL"])
+	if raw == "" {
+		return defaultDiscoveryInterval
+	}
+	parsed, err := time.ParseDuration(raw)
+	if err != nil || parsed < time.Minute {
+		return defaultDiscoveryInterval
+	}
+	return parsed
+}
+
+func discoveryPemPathsFromEnv(values map[string]string) []string {
+	raw := strings.TrimSpace(values["COMPLIWISE_DISCOVERY_PEM_PATHS"])
+	if raw == "" {
+		return []string{defaultDiscoveryPemPaths}
+	}
+	parts := strings.Split(raw, ",")
+	paths := make([]string, 0, len(parts))
+	for _, part := range parts {
+		trimmed := strings.TrimSpace(part)
+		if trimmed != "" {
+			paths = append(paths, trimmed)
+		}
+	}
+	if len(paths) == 0 {
+		return []string{defaultDiscoveryPemPaths}
+	}
+	return paths
+}
+
+func discoveryMaxItemsFromEnv(values map[string]string) int {
+	raw := strings.TrimSpace(values["COMPLIWISE_DISCOVERY_MAX_ITEMS"])
+	if raw == "" {
+		return defaultDiscoveryMaxItems
+	}
+	value, err := strconv.Atoi(raw)
+	if err != nil || value < 1 {
+		return defaultDiscoveryMaxItems
+	}
+	if value > defaultDiscoveryMaxItems {
+		return defaultDiscoveryMaxItems
+	}
+	return value
+}
+
+func discoveryPostDeployFromEnv(values map[string]string) bool {
+	raw := strings.TrimSpace(values["COMPLIWISE_DISCOVERY_POST_DEPLOY"])
+	if raw == "" {
+		return true
+	}
+	return !strings.EqualFold(raw, "false")
 }
