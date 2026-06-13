@@ -246,3 +246,60 @@ COMPLIWISE_TLS_PROBE_POST_DEPLOY=false
 		t.Fatal("expected post-deploy probe disabled")
 	}
 }
+
+func TestLoadSyntheticConfigDefaults(t *testing.T) {
+	dir := t.TempDir()
+	envPath := filepath.Join(dir, "agent.env")
+	if err := os.WriteFile(envPath, []byte("COMPLIWISE_API_URL=http://file.example\n"), 0o600); err != nil {
+		t.Fatalf("write env file: %v", err)
+	}
+	t.Setenv("COMPLIWISE_AGENT_ENV_FILE", envPath)
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if !cfg.SyntheticEnabled {
+		t.Fatal("expected synthetic enabled by default")
+	}
+	if cfg.SyntheticSyncInterval != 5*time.Minute {
+		t.Fatalf("expected 5m sync interval, got %s", cfg.SyntheticSyncInterval)
+	}
+	if cfg.SyntheticMaxWorkers != 10 {
+		t.Fatalf("expected 10 max workers, got %d", cfg.SyntheticMaxWorkers)
+	}
+	if cfg.SyntheticUserAgent != defaultSyntheticUserAgent {
+		t.Fatalf("unexpected user agent: %q", cfg.SyntheticUserAgent)
+	}
+}
+
+func TestLoadSyntheticConfigOverrides(t *testing.T) {
+	dir := t.TempDir()
+	envPath := filepath.Join(dir, "agent.env")
+	if err := os.WriteFile(envPath, []byte(`COMPLIWISE_API_URL=http://file.example
+COMPLIWISE_SYNTHETIC_ENABLED=false
+COMPLIWISE_SYNTHETIC_SYNC_INTERVAL=2m
+COMPLIWISE_SYNTHETIC_MAX_WORKERS=25
+COMPLIWISE_SYNTHETIC_USER_AGENT=Custom-Agent/{version}
+`), 0o600); err != nil {
+		t.Fatalf("write env file: %v", err)
+	}
+	t.Setenv("COMPLIWISE_AGENT_ENV_FILE", envPath)
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if cfg.SyntheticEnabled {
+		t.Fatal("expected synthetic disabled")
+	}
+	if cfg.SyntheticSyncInterval != 2*time.Minute {
+		t.Fatalf("expected 2m sync interval, got %s", cfg.SyntheticSyncInterval)
+	}
+	if cfg.SyntheticMaxWorkers != 25 {
+		t.Fatalf("expected 25 max workers, got %d", cfg.SyntheticMaxWorkers)
+	}
+	if cfg.SyntheticUserAgent != "Custom-Agent/{version}" {
+		t.Fatalf("unexpected user agent: %q", cfg.SyntheticUserAgent)
+	}
+}

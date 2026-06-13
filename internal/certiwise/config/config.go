@@ -19,6 +19,11 @@ const (
 	defaultDiscoveryPemPaths     = "/usr/local/share/ca-certificates"
 	defaultProbeInterval         = 5 * time.Minute
 	defaultProbeTimeout          = 10 * time.Second
+	defaultSyntheticSyncInterval = 5 * time.Minute
+	defaultSyntheticMaxWorkers   = 10
+	defaultSyntheticUserAgent    = "CompliWise-Capture-Agent/{version}"
+	minSyntheticSyncInterval     = time.Minute
+	maxSyntheticMaxWorkers       = 50
 	defaultDiscoveryTLSTimeout   = 3 * time.Second
 	minDiscoveryTLSTimeout       = 500 * time.Millisecond
 	minProbeInterval             = 30 * time.Second
@@ -60,6 +65,10 @@ type Config struct {
 	ProbeTargets      []string
 	ProbeInsecure     bool
 	ProbePostDeploy   bool
+	SyntheticEnabled  bool
+	SyntheticSyncInterval time.Duration
+	SyntheticMaxWorkers int
+	SyntheticUserAgent string
 }
 
 // Load reads CompliWise settings from the persisted env file and process environment.
@@ -118,6 +127,10 @@ func Load() (*Config, error) {
 		ProbeTargets:        probeTargetsFromEnv(merged),
 		ProbeInsecure:       probeInsecureFromEnv(merged),
 		ProbePostDeploy:     probePostDeployFromEnv(merged),
+		SyntheticEnabled:    syntheticEnabledFromEnv(merged),
+		SyntheticSyncInterval: syntheticSyncIntervalFromEnv(merged),
+		SyntheticMaxWorkers: syntheticMaxWorkersFromEnv(merged),
+		SyntheticUserAgent:  syntheticUserAgentFromEnv(merged),
 	}
 
 	return cfg, nil
@@ -347,4 +360,47 @@ func probePostDeployFromEnv(values map[string]string) bool {
 
 func probeInsecureFromEnv(values map[string]string) bool {
 	return strings.EqualFold(strings.TrimSpace(values["COMPLIWISE_TLS_PROBE_INSECURE"]), "true")
+}
+
+func syntheticEnabledFromEnv(values map[string]string) bool {
+	raw := strings.TrimSpace(values["COMPLIWISE_SYNTHETIC_ENABLED"])
+	if raw == "" {
+		return true
+	}
+	return !strings.EqualFold(raw, "false")
+}
+
+func syntheticSyncIntervalFromEnv(values map[string]string) time.Duration {
+	raw := strings.TrimSpace(values["COMPLIWISE_SYNTHETIC_SYNC_INTERVAL"])
+	if raw == "" {
+		return defaultSyntheticSyncInterval
+	}
+	parsed, err := time.ParseDuration(raw)
+	if err != nil || parsed < minSyntheticSyncInterval {
+		return defaultSyntheticSyncInterval
+	}
+	return parsed
+}
+
+func syntheticMaxWorkersFromEnv(values map[string]string) int {
+	raw := strings.TrimSpace(values["COMPLIWISE_SYNTHETIC_MAX_WORKERS"])
+	if raw == "" {
+		return defaultSyntheticMaxWorkers
+	}
+	value, err := strconv.Atoi(raw)
+	if err != nil || value < 1 {
+		return defaultSyntheticMaxWorkers
+	}
+	if value > maxSyntheticMaxWorkers {
+		return maxSyntheticMaxWorkers
+	}
+	return value
+}
+
+func syntheticUserAgentFromEnv(values map[string]string) string {
+	raw := strings.TrimSpace(values["COMPLIWISE_SYNTHETIC_USER_AGENT"])
+	if raw == "" {
+		return defaultSyntheticUserAgent
+	}
+	return raw
 }
