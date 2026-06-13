@@ -79,6 +79,9 @@ func InitializeHandler(config *config.Config, metadata *handler.CaptureMeta) htt
 	apiV1.GET("/metrics/net", metricsHandler.MetricsNet)
 	apiV1.GET("/metrics/docker", metricsHandler.MetricsDocker)
 
+	probeHandler := handler.NewProbeHandler()
+	apiV1.POST("/certiwise/probe", probeHandler.TriggerProbe)
+
 	return r.Handler()
 }
 

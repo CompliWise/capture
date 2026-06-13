@@ -17,6 +17,10 @@ const (
 	defaultDiscoveryMaxItems     = 500
 	defaultDiscoveryInterval     = 24 * time.Hour
 	defaultDiscoveryPemPaths     = "/usr/local/share/ca-certificates"
+	defaultProbeInterval         = 5 * time.Minute
+	defaultProbeTimeout          = 10 * time.Second
+	minProbeInterval             = 30 * time.Second
+	minProbeTimeout              = time.Second
 )
 
 // Config holds CompliWise control-plane settings for the capture agent.
@@ -41,6 +45,12 @@ type Config struct {
 	DiscoveryPemPaths []string
 	DiscoveryMaxItems int
 	DiscoveryPostDeploy bool
+	ProbeEnabled      bool
+	ProbeInterval     time.Duration
+	ProbeTimeout      time.Duration
+	ProbeTargets      []string
+	ProbeInsecure     bool
+	ProbePostDeploy   bool
 }
 
 // Load reads CompliWise settings from the persisted env file and process environment.
@@ -84,8 +94,14 @@ func Load() (*Config, error) {
 		DiscoveryEnabled:   discoveryEnabledFromEnv(merged),
 		DiscoveryInterval:  discoveryIntervalFromEnv(merged),
 		DiscoveryPemPaths:  discoveryPemPathsFromEnv(merged),
-		DiscoveryMaxItems:  discoveryMaxItemsFromEnv(merged),
+		DiscoveryMaxItems:   discoveryMaxItemsFromEnv(merged),
 		DiscoveryPostDeploy: discoveryPostDeployFromEnv(merged),
+		ProbeEnabled:        probeEnabledFromEnv(merged),
+		ProbeInterval:       probeIntervalFromEnv(merged),
+		ProbeTimeout:        probeTimeoutFromEnv(merged),
+		ProbeTargets:        probeTargetsFromEnv(merged),
+		ProbeInsecure:       probeInsecureFromEnv(merged),
+		ProbePostDeploy:     probePostDeployFromEnv(merged),
 	}
 
 	return cfg, nil
@@ -187,4 +203,64 @@ func discoveryPostDeployFromEnv(values map[string]string) bool {
 		return true
 	}
 	return !strings.EqualFold(raw, "false")
+}
+
+func probeEnabledFromEnv(values map[string]string) bool {
+	raw := strings.TrimSpace(values["COMPLIWISE_TLS_PROBE_ENABLED"])
+	if raw == "" {
+		return true
+	}
+	return !strings.EqualFold(raw, "false")
+}
+
+func probeIntervalFromEnv(values map[string]string) time.Duration {
+	raw := strings.TrimSpace(values["COMPLIWISE_TLS_PROBE_INTERVAL"])
+	if raw == "" {
+		return defaultProbeInterval
+	}
+	parsed, err := time.ParseDuration(raw)
+	if err != nil || parsed < minProbeInterval {
+		return defaultProbeInterval
+	}
+	return parsed
+}
+
+func probeTimeoutFromEnv(values map[string]string) time.Duration {
+	raw := strings.TrimSpace(values["COMPLIWISE_TLS_PROBE_TIMEOUT"])
+	if raw == "" {
+		return defaultProbeTimeout
+	}
+	parsed, err := time.ParseDuration(raw)
+	if err != nil || parsed < minProbeTimeout {
+		return defaultProbeTimeout
+	}
+	return parsed
+}
+
+func probeTargetsFromEnv(values map[string]string) []string {
+	raw := strings.TrimSpace(values["COMPLIWISE_TLS_PROBE_TARGETS"])
+	if raw == "" {
+		return nil
+	}
+	parts := strings.Split(raw, ",")
+	targets := make([]string, 0, len(parts))
+	for _, part := range parts {
+		trimmed := strings.TrimSpace(part)
+		if trimmed != "" {
+			targets = append(targets, trimmed)
+		}
+	}
+	return targets
+}
+
+func probePostDeployFromEnv(values map[string]string) bool {
+	raw := strings.TrimSpace(values["COMPLIWISE_TLS_PROBE_POST_DEPLOY"])
+	if raw == "" {
+		return true
+	}
+	return !strings.EqualFold(raw, "false")
+}
+
+func probeInsecureFromEnv(values map[string]string) bool {
+	return strings.EqualFold(strings.TrimSpace(values["COMPLIWISE_TLS_PROBE_INSECURE"]), "true")
 }

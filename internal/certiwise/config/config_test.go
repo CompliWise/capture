@@ -107,3 +107,71 @@ func TestLoadDiscoveryConfigDefaults(t *testing.T) {
 		t.Fatalf("unexpected pem paths: %#v", cfg.DiscoveryPemPaths)
 	}
 }
+
+func TestLoadProbeConfigDefaults(t *testing.T) {
+	dir := t.TempDir()
+	envPath := filepath.Join(dir, "agent.env")
+	if err := os.WriteFile(envPath, []byte("COMPLIWISE_API_URL=http://file.example\n"), 0o600); err != nil {
+		t.Fatalf("write env file: %v", err)
+	}
+	t.Setenv("COMPLIWISE_AGENT_ENV_FILE", envPath)
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if !cfg.ProbeEnabled {
+		t.Fatal("expected probe enabled by default")
+	}
+	if cfg.ProbeInterval != 5*time.Minute {
+		t.Fatalf("expected 5m probe interval, got %s", cfg.ProbeInterval)
+	}
+	if cfg.ProbeTimeout != 10*time.Second {
+		t.Fatalf("expected 10s probe timeout, got %s", cfg.ProbeTimeout)
+	}
+	if cfg.ProbeInsecure {
+		t.Fatal("expected probe insecure disabled by default")
+	}
+	if !cfg.ProbePostDeploy {
+		t.Fatal("expected post-deploy probe enabled by default")
+	}
+}
+
+func TestLoadProbeConfigOverrides(t *testing.T) {
+	dir := t.TempDir()
+	envPath := filepath.Join(dir, "agent.env")
+	if err := os.WriteFile(envPath, []byte(`COMPLIWISE_API_URL=http://file.example
+COMPLIWISE_TLS_PROBE_ENABLED=false
+COMPLIWISE_TLS_PROBE_INTERVAL=2m
+COMPLIWISE_TLS_PROBE_TIMEOUT=5s
+COMPLIWISE_TLS_PROBE_TARGETS=https://probe.example:443/,https://other.example:8443/
+COMPLIWISE_TLS_PROBE_INSECURE=true
+COMPLIWISE_TLS_PROBE_POST_DEPLOY=false
+`), 0o600); err != nil {
+		t.Fatalf("write env file: %v", err)
+	}
+	t.Setenv("COMPLIWISE_AGENT_ENV_FILE", envPath)
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if cfg.ProbeEnabled {
+		t.Fatal("expected probe disabled")
+	}
+	if cfg.ProbeInterval != 2*time.Minute {
+		t.Fatalf("expected 2m probe interval, got %s", cfg.ProbeInterval)
+	}
+	if cfg.ProbeTimeout != 5*time.Second {
+		t.Fatalf("expected 5s probe timeout, got %s", cfg.ProbeTimeout)
+	}
+	if len(cfg.ProbeTargets) != 2 {
+		t.Fatalf("expected 2 probe targets, got %#v", cfg.ProbeTargets)
+	}
+	if !cfg.ProbeInsecure {
+		t.Fatal("expected probe insecure enabled")
+	}
+	if cfg.ProbePostDeploy {
+		t.Fatal("expected post-deploy probe disabled")
+	}
+}

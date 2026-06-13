@@ -10,6 +10,7 @@ import (
 	"github.com/bluewave-labs/capture/internal/certiwise"
 	cwconfig "github.com/bluewave-labs/capture/internal/certiwise/config"
 	"github.com/bluewave-labs/capture/internal/certiwise/discovery"
+	"github.com/bluewave-labs/capture/internal/certiwise/probe"
 	"github.com/bluewave-labs/capture/internal/certiwise/store"
 )
 
@@ -85,15 +86,32 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 
 	tracker := newAssignmentTracker()
 	discoveryScheduler := discovery.NewScheduler()
+	probeScheduler := probe.NewScheduler()
 
-	pull, deploySucceeded, err := syncAssignments(ctx, client, tracker)
+	probe.RegisterManualRunner(func(ctx context.Context) (int, error) {
+		pull, err := client.PullAssignments()
+		if err != nil {
+			return 0, err
+		}
+		return probeScheduler.RunManual(ctx, client, cfg, pull)
+	})
+
+	pull, succeeded, err := syncAssignments(ctx, client, tracker)
 	if err != nil {
 		log.Printf("certiwise: initial assignment sync failed: %v", err)
 	} else if pull != nil {
 		if err := discoveryScheduler.RunIfDue(ctx, client, cfg, pull); err != nil {
 			log.Printf("certiwise: discovery scan failed: %v", err)
 		}
-		if deploySucceeded {
+		if err := probeScheduler.RunIfDue(ctx, client, cfg, pull); err != nil {
+			log.Printf("certiwise: TLS probe failed: %v", err)
+		}
+		for _, assignment := range succeeded {
+			if err := probeScheduler.RunPostDeploy(ctx, client, cfg, assignment); err != nil {
+				log.Printf("certiwise: post-deploy TLS probe failed: %v", err)
+			}
+		}
+		if len(succeeded) > 0 {
 			if err := discoveryScheduler.RunPostDeploy(ctx, client, cfg, pull); err != nil {
 				log.Printf("certiwise: post-deploy discovery scan failed: %v", err)
 			}
@@ -114,6 +132,14 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 		discoveryC = discoveryTicker.C
 	}
 
+	var probeTicker *time.Ticker
+	var probeC <-chan time.Time
+	if cfg.ProbeEnabled {
+		probeTicker = time.NewTicker(cfg.ProbeInterval)
+		defer probeTicker.Stop()
+		probeC = probeTicker.C
+	}
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -123,7 +149,7 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 				log.Printf("certiwise: heartbeat failed: %v", err)
 			}
 		case <-pollTicker.C:
-			pull, deploySucceeded, err := syncAssignments(ctx, client, tracker)
+			pull, succeeded, err := syncAssignments(ctx, client, tracker)
 			if err != nil {
 				log.Printf("certiwise: assignment sync failed: %v", err)
 				continue
@@ -134,7 +160,15 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 			if err := discoveryScheduler.RunIfDue(ctx, client, cfg, pull); err != nil {
 				log.Printf("certiwise: discovery scan failed: %v", err)
 			}
-			if deploySucceeded {
+			if err := probeScheduler.RunIfDue(ctx, client, cfg, pull); err != nil {
+				log.Printf("certiwise: TLS probe failed: %v", err)
+			}
+			for _, assignment := range succeeded {
+				if err := probeScheduler.RunPostDeploy(ctx, client, cfg, assignment); err != nil {
+					log.Printf("certiwise: post-deploy TLS probe failed: %v", err)
+				}
+			}
+			if len(succeeded) > 0 {
 				if err := discoveryScheduler.RunPostDeploy(ctx, client, cfg, pull); err != nil {
 					log.Printf("certiwise: post-deploy discovery scan failed: %v", err)
 				}
@@ -150,6 +184,18 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 			}
 			if err := discoveryScheduler.RunIfDue(ctx, client, cfg, pull); err != nil {
 				log.Printf("certiwise: scheduled discovery scan failed: %v", err)
+			}
+		case <-probeC:
+			if probeC == nil {
+				continue
+			}
+			pull, err := client.PullAssignments()
+			if err != nil {
+				log.Printf("certiwise: probe pull failed: %v", err)
+				continue
+			}
+			if err := probeScheduler.RunIfDue(ctx, client, cfg, pull); err != nil {
+				log.Printf("certiwise: scheduled TLS probe failed: %v", err)
 			}
 		}
 	}

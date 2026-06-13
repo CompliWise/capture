@@ -38,17 +38,17 @@ func syncAssignments(
 	ctx context.Context,
 	client *certiwise.Client,
 	tracker *assignmentTracker,
-) (*certiwise.AssignmentsPullResponse, bool, error) {
+) (*certiwise.AssignmentsPullResponse, []certiwise.AssignmentPullItem, error) {
 	if ctx.Err() != nil {
-		return nil, false, ctx.Err()
+		return nil, nil, ctx.Err()
 	}
 
 	pull, err := client.PullAssignments()
 	if err != nil {
-		return nil, false, fmt.Errorf("pull assignments: %w", err)
+		return nil, nil, fmt.Errorf("pull assignments: %w", err)
 	}
 
-	deploySucceeded := false
+	succeeded := make([]certiwise.AssignmentPullItem, 0)
 	for _, assignment := range pull.Assignments {
 		if tracker.isSucceeded(assignment.DeploymentID) {
 			continue
@@ -65,10 +65,10 @@ func syncAssignments(
 		}
 
 		tracker.markSucceeded(assignment.DeploymentID)
-		deploySucceeded = true
+		succeeded = append(succeeded, assignment)
 	}
 
-	return pull, deploySucceeded, nil
+	return pull, succeeded, nil
 }
 
 func processAssignment(

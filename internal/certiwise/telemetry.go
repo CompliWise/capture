@@ -13,9 +13,24 @@ const telemetryBatchPath = "/api/v1/agent/telemetry/batch"
 
 // TelemetryEvent is one event in a telemetry batch POST.
 type TelemetryEvent struct {
-	Type       string `json:"type"`
-	ObservedAt string `json:"observedAt"`
-	Payload    any    `json:"payload"`
+	Type          string `json:"type"`
+	ObservedAt    string `json:"observedAt"`
+	ApplicationID string `json:"applicationId,omitempty"`
+	CertificateID string `json:"certificateId,omitempty"`
+	DeploymentID  string `json:"deploymentId,omitempty"`
+	Payload       any    `json:"payload"`
+}
+
+// TlsHandshakePayload is the tls.handshake event payload.
+type TlsHandshakePayload struct {
+	ServerName           string   `json:"serverName"`
+	PeerAddress          string   `json:"peerAddress"`
+	TLSVersion           string   `json:"tlsVersion"`
+	CipherSuite          string   `json:"cipherSuite"`
+	PresentedChainSha256 []string `json:"presentedChainSha256"`
+	ValidationResult     string   `json:"validationResult"`
+	ValidationErrors     []string `json:"validationErrors"`
+	DurationMs           int      `json:"durationMs"`
 }
 
 // DiscoveryScanPayload is the discovery.scan event payload.
