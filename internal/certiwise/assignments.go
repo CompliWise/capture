@@ -20,13 +20,16 @@ type AssignmentConfig struct {
 	VerifyServerName string   `json:"verifyServerName,omitempty"`
 	TrustStorePath   string   `json:"trustStorePath,omitempty"`
 	ReloadCommand    []string `json:"reloadCommand,omitempty"`
-	CertFileName     string   `json:"certFileName,omitempty"`
-	EnvFilePath      string   `json:"envFilePath,omitempty"`
+	CertFileName      string   `json:"certFileName,omitempty"`
+	KeyFileName       string   `json:"keyFileName,omitempty"`
+	KeyPermissionMode string   `json:"keyPermissionMode,omitempty"`
+	EnvFilePath       string   `json:"envFilePath,omitempty"`
 }
 
-// TrustAnchorMaterial is ephemeral PEM material for trust-anchor installs.
-type TrustAnchorMaterial struct {
-	ChainPem string `json:"chainPem"`
+// AssignmentMaterial is ephemeral PEM material returned on agent pull.
+type AssignmentMaterial struct {
+	ChainPem      string `json:"chainPem"`
+	PrivateKeyPem string `json:"privateKeyPem,omitempty"`
 }
 
 // AssignmentPullItem is one assignment entry returned by GET /agent/assignments.
@@ -40,7 +43,7 @@ type AssignmentPullItem struct {
 	MaterialType      string              `json:"materialType"`
 	IncludePrivateKey bool                `json:"includePrivateKey"`
 	Config            AssignmentConfig    `json:"config"`
-	Material          TrustAnchorMaterial `json:"material"`
+	Material          AssignmentMaterial  `json:"material"`
 	DeploymentIntent  string              `json:"deploymentIntent,omitempty"`
 }
 

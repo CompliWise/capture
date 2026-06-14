@@ -8,6 +8,7 @@ type InstallRecord struct {
 	TrustStoreType string `json:"trustStoreType"`
 	Thumbprint     string `json:"thumbprint"`
 	CertPath       string `json:"certPath"`
+	KeyPath        string `json:"keyPath,omitempty"`
 	Alias          string `json:"alias,omitempty"`
 	TrustStorePath string `json:"trustStorePath,omitempty"`
 	EnvFilePath    string `json:"envFilePath,omitempty"`
@@ -18,15 +19,18 @@ type InstallOptions struct {
 	AssignmentID   string
 	DeploymentID   string
 	TrustStoreType string
-	MaterialType   string
-	ChainPem       string
-	Thumbprint     string
-	CertFileName   string
-	TrustStorePath string
-	Alias          string
-	ReloadCommand  []string
-	StorePassword  string
-	EnvFilePath    string
+	MaterialType      string
+	ChainPem          string
+	PrivateKeyPem     string
+	Thumbprint        string
+	CertFileName      string
+	KeyFileName       string
+	KeyPermissionMode string
+	TrustStorePath    string
+	Alias             string
+	ReloadCommand     []string
+	StorePassword     string
+	EnvFilePath       string
 }
 
 // RemoveOptions configures a trust-store removal attempt.

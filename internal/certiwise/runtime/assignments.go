@@ -143,22 +143,26 @@ func processAssignment(
 	}
 
 	opts := installer.InstallOptions{
-		AssignmentID:   assignment.AssignmentID,
-		DeploymentID:   assignment.DeploymentID,
-		TrustStoreType: assignment.TrustStoreType,
-		MaterialType:   assignment.MaterialType,
-		ChainPem:       assignment.Material.ChainPem,
-		Thumbprint:     thumbprint,
-		CertFileName:   assignment.Config.CertFileName,
-		TrustStorePath: assignment.Config.TrustStorePath,
-		Alias:          assignment.Config.Alias,
-		ReloadCommand:  assignment.Config.ReloadCommand,
-		EnvFilePath:    assignment.Config.EnvFilePath,
+		AssignmentID:      assignment.AssignmentID,
+		DeploymentID:      assignment.DeploymentID,
+		TrustStoreType:    assignment.TrustStoreType,
+		MaterialType:      assignment.MaterialType,
+		ChainPem:          assignment.Material.ChainPem,
+		PrivateKeyPem:     assignment.Material.PrivateKeyPem,
+		Thumbprint:        thumbprint,
+		CertFileName:      assignment.Config.CertFileName,
+		KeyFileName:       assignment.Config.KeyFileName,
+		KeyPermissionMode: assignment.Config.KeyPermissionMode,
+		TrustStorePath:    assignment.Config.TrustStorePath,
+		Alias:             assignment.Config.Alias,
+		ReloadCommand:     assignment.Config.ReloadCommand,
+		EnvFilePath:       assignment.Config.EnvFilePath,
 	}
 
 	installerLog, installErr := inst.Install(ctx, opts)
 	if installErr != nil {
-		report("failed", "ERR_INSTALL_FAILED", installErr.Error(), installerLog)
+		errorCode := mapInstallError(installErr)
+		report("failed", errorCode, installErr.Error(), installerLog)
 		return installErr
 	}
 
@@ -169,11 +173,18 @@ func processAssignment(
 
 	report("succeeded", "", "", installerLog)
 	log.Printf(
-		"certiwise: installed trust anchor for assignment %s at %s",
+		"certiwise: installed %s material for assignment %s",
+		assignment.MaterialType,
 		assignment.AssignmentID,
-		assignment.Config.Alias,
 	)
 	return nil
+}
+
+func mapInstallError(err error) string {
+	if code := installer.ErrorCode(err); code != "" {
+		return code
+	}
+	return "ERR_INSTALL_FAILED"
 }
 
 func processRemoval(
@@ -249,7 +260,22 @@ func buildInstallRecord(
 		record.EnvFilePath = strings.TrimSpace(opts.EnvFilePath)
 	case "pem_directory":
 		storePath := strings.TrimSpace(opts.TrustStorePath)
-		record.CertPath = filepath.Join(storePath, installer.SanitizeFileName(opts.CertFileName))
+		certName := strings.TrimSpace(opts.CertFileName)
+		if certName == "" {
+			certName = "tls.crt"
+		} else {
+			certName = installer.SanitizeFileName(certName)
+		}
+		record.CertPath = filepath.Join(storePath, certName)
+		if assignment.MaterialType == "server_identity" {
+			keyName := strings.TrimSpace(opts.KeyFileName)
+			if keyName == "" {
+				keyName = "tls.key"
+			} else {
+				keyName = installer.SanitizeFileName(keyName)
+			}
+			record.KeyPath = filepath.Join(storePath, keyName)
+		}
 	}
 
 	return record
