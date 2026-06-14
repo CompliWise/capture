@@ -21,6 +21,7 @@ type AssignmentConfig struct {
 	TrustStorePath   string   `json:"trustStorePath,omitempty"`
 	ReloadCommand    []string `json:"reloadCommand,omitempty"`
 	CertFileName     string   `json:"certFileName,omitempty"`
+	EnvFilePath      string   `json:"envFilePath,omitempty"`
 }
 
 // TrustAnchorMaterial is ephemeral PEM material for trust-anchor installs.
@@ -40,6 +41,7 @@ type AssignmentPullItem struct {
 	IncludePrivateKey bool                `json:"includePrivateKey"`
 	Config            AssignmentConfig    `json:"config"`
 	Material          TrustAnchorMaterial `json:"material"`
+	DeploymentIntent  string              `json:"deploymentIntent,omitempty"`
 }
 
 // AssignmentsPullResponse is the body of GET /agent/assignments.

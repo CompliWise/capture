@@ -4,11 +4,29 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/bluewave-labs/capture/internal/certiwise"
+	"github.com/bluewave-labs/capture/internal/installer"
+	"github.com/bluewave-labs/capture/internal/installer/java"
 	"github.com/bluewave-labs/capture/internal/installer/linux"
+	installerstate "github.com/bluewave-labs/capture/internal/installer/state"
 )
+
+var (
+	defaultInstallRegistry = newDefaultInstallRegistry()
+	defaultInstallState    = installerstate.NewStore(resolveInstallStatePath())
+)
+
+func resolveInstallStatePath() string {
+	if value := strings.TrimSpace(os.Getenv("COMPLIWISE_INSTALL_STATE_PATH")); value != "" {
+		return value
+	}
+	return installerstate.DefaultStatePath
+}
 
 type assignmentTracker struct {
 	mu                   sync.Mutex
@@ -86,7 +104,7 @@ func processAssignment(
 			Status:       status,
 			ErrorCode:    errorCode,
 			ErrorMessage: errorMessage,
-			InstallerLog: installerLog,
+			InstallerLog: installer.TruncateLog(installerLog),
 			FinishedAt:   finishedAt,
 		}
 		if err := client.ReportDeployment(assignment.DeploymentID, req); err != nil {
@@ -99,39 +117,147 @@ func processAssignment(
 		}
 	}
 
-	switch assignment.TrustStoreType {
-	case "linux_update_ca_certificates":
-		if assignment.MaterialType != "trust_anchor" {
-			report(
-				"failed",
-				"ERR_INSTALL_FAILED",
-				"linux_update_ca_certificates only supports trust_anchor material",
-				"",
-			)
-			return fmt.Errorf("unsupported material type %q", assignment.MaterialType)
-		}
+	intent := strings.TrimSpace(assignment.DeploymentIntent)
+	if intent == "" {
+		intent = "install"
+	}
 
-		installerLog, err := linux.InstallLinuxUpdateCACertificates(linux.InstallOptions{
-			CertFileName:   assignment.Config.CertFileName,
-			TrustStorePath: assignment.Config.TrustStorePath,
-			ReloadCommand:  assignment.Config.ReloadCommand,
-			ChainPem:       assignment.Material.ChainPem,
-		})
-		if err != nil {
-			report("failed", "ERR_INSTALL_FAILED", err.Error(), installerLog)
-			return err
-		}
+	if intent == "remove" {
+		return processRemoval(ctx, assignment, report)
+	}
 
-		report("succeeded", "", "", installerLog)
-		log.Printf(
-			"certiwise: installed trust anchor for assignment %s at %s",
-			assignment.AssignmentID,
-			assignment.Config.Alias,
+	inst, ok := defaultInstallRegistry.Lookup(assignment.TrustStoreType)
+	if !ok || !inst.Supports(assignment.MaterialType, assignment.TrustStoreType) {
+		message := fmt.Sprintf(
+			"trust store type %q is not supported by this agent build",
+			assignment.TrustStoreType,
 		)
-		return nil
-	default:
-		message := fmt.Sprintf("trust store type %q is not supported by this agent build", assignment.TrustStoreType)
-		report("failed", "ERR_INSTALL_FAILED", message, "")
+		report("failed", "ERR_UNSUPPORTED_INSTALLER", message, "")
 		return fmt.Errorf("%s", message)
 	}
+
+	thumbprint, err := installer.ThumbprintFromPEM(assignment.Material.ChainPem)
+	if err != nil {
+		report("failed", "ERR_INSTALL_FAILED", err.Error(), "")
+		return err
+	}
+
+	opts := installer.InstallOptions{
+		AssignmentID:   assignment.AssignmentID,
+		DeploymentID:   assignment.DeploymentID,
+		TrustStoreType: assignment.TrustStoreType,
+		MaterialType:   assignment.MaterialType,
+		ChainPem:       assignment.Material.ChainPem,
+		Thumbprint:     thumbprint,
+		CertFileName:   assignment.Config.CertFileName,
+		TrustStorePath: assignment.Config.TrustStorePath,
+		Alias:          assignment.Config.Alias,
+		ReloadCommand:  assignment.Config.ReloadCommand,
+		EnvFilePath:    assignment.Config.EnvFilePath,
+	}
+
+	installerLog, installErr := inst.Install(ctx, opts)
+	if installErr != nil {
+		report("failed", "ERR_INSTALL_FAILED", installErr.Error(), installerLog)
+		return installErr
+	}
+
+	record := buildInstallRecord(assignment, thumbprint, opts)
+	if err := defaultInstallState.Upsert(record); err != nil {
+		log.Printf("certiwise: persist install state for %s: %v", assignment.AssignmentID, err)
+	}
+
+	report("succeeded", "", "", installerLog)
+	log.Printf(
+		"certiwise: installed trust anchor for assignment %s at %s",
+		assignment.AssignmentID,
+		assignment.Config.Alias,
+	)
+	return nil
+}
+
+func processRemoval(
+	ctx context.Context,
+	assignment certiwise.AssignmentPullItem,
+	report func(status, errorCode, errorMessage, installerLog string),
+) error {
+	record, ok := defaultInstallState.Get(assignment.AssignmentID)
+	if !ok {
+		message := fmt.Sprintf("no install state for assignment %s", assignment.AssignmentID)
+		report("failed", "ERR_REMOVAL_FAILED", message, "")
+		return fmt.Errorf("%s", message)
+	}
+
+	inst, found := defaultInstallRegistry.Lookup(assignment.TrustStoreType)
+	if !found || !inst.Supports(assignment.MaterialType, assignment.TrustStoreType) {
+		message := fmt.Sprintf(
+			"trust store type %q is not supported by this agent build",
+			assignment.TrustStoreType,
+		)
+		report("failed", "ERR_UNSUPPORTED_INSTALLER", message, "")
+		return fmt.Errorf("%s", message)
+	}
+
+	installerLog, err := inst.Remove(ctx, installer.RemoveOptions{
+		AssignmentID:   assignment.AssignmentID,
+		TrustStoreType: assignment.TrustStoreType,
+		Record:         record,
+	})
+	if err != nil {
+		report("failed", "ERR_REMOVAL_FAILED", err.Error(), installerLog)
+		return err
+	}
+
+	if err := defaultInstallState.Delete(assignment.AssignmentID); err != nil {
+		log.Printf("certiwise: delete install state for %s: %v", assignment.AssignmentID, err)
+	}
+
+	report("removed", "", "", installerLog)
+	log.Printf("certiwise: removed trust material for assignment %s", assignment.AssignmentID)
+	return nil
+}
+
+func buildInstallRecord(
+	assignment certiwise.AssignmentPullItem,
+	thumbprint string,
+	opts installer.InstallOptions,
+) installer.InstallRecord {
+	record := installer.InstallRecord{
+		AssignmentID:   assignment.AssignmentID,
+		TrustStoreType: assignment.TrustStoreType,
+		Thumbprint:     thumbprint,
+		Alias:          installer.DefaultAlias(assignment.AssignmentID, assignment.Config.Alias),
+		TrustStorePath: strings.TrimSpace(assignment.Config.TrustStorePath),
+		EnvFilePath:    strings.TrimSpace(assignment.Config.EnvFilePath),
+	}
+
+	switch assignment.TrustStoreType {
+	case "linux_update_ca_certificates":
+		record.CertPath = linux.CertPathForOptions(linux.InstallOptions{
+			CertFileName:   opts.CertFileName,
+			TrustStorePath: opts.TrustStorePath,
+		})
+	case "java_cacerts":
+		record.CertPath, record.TrustStorePath = java.RecordPaths(opts)
+	case "python_certifi_bundle":
+		if path, err := pythonBundlePath(opts.TrustStorePath); err == nil {
+			record.CertPath = path
+		}
+	case "node_extra_ca_certs":
+		base := strings.TrimSpace(opts.TrustStorePath)
+		record.CertPath = filepath.Join(base, fmt.Sprintf("compliwise-%s.pem", assignment.AssignmentID))
+		record.EnvFilePath = strings.TrimSpace(opts.EnvFilePath)
+	case "pem_directory":
+		storePath := strings.TrimSpace(opts.TrustStorePath)
+		record.CertPath = filepath.Join(storePath, installer.SanitizeFileName(opts.CertFileName))
+	}
+
+	return record
+}
+
+func pythonBundlePath(configured string) (string, error) {
+	if trimmed := strings.TrimSpace(configured); trimmed != "" {
+		return trimmed, nil
+	}
+	return "", fmt.Errorf("trustStorePath is required for python_certifi_bundle state")
 }
