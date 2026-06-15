@@ -104,72 +104,100 @@ func (c *Client) GetUpgradeArtifact(ctx context.Context, targetVersion, platform
 	path := upgradeArtifactPath + "?" + query.Encode()
 
 	var resp UpgradeArtifactResponse
-	if err := c.doJSONWithContext(ctx, http.MethodGet, path, nil, true, &resp); err != nil {
+	if err := c.doJSONWithContext(ctx, http.MethodGet, path, nil, true, &resp, nil); err != nil {
 		return nil, err
 	}
 	return &resp, nil
 }
 
 func (c *Client) doJSON(method, path string, body any, auth bool, dest any) error {
-	return c.doJSONWithContext(context.Background(), method, path, body, auth, dest)
+	return c.doJSONWithContext(context.Background(), method, path, body, auth, dest, nil)
 }
 
-func (c *Client) doJSONWithContext(ctx context.Context, method, path string, body any, auth bool, dest any) error {
+func (c *Client) doJSONWithContext(
+	ctx context.Context,
+	method,
+	path string,
+	body any,
+	auth bool,
+	dest any,
+	extraHeaders map[string]string,
+) error {
+	_, _, err := c.doJSONWithContextStatus(ctx, method, path, body, auth, dest, extraHeaders)
+	return err
+}
+
+func (c *Client) doJSONWithContextStatus(
+	ctx context.Context,
+	method,
+	path string,
+	body any,
+	auth bool,
+	dest any,
+	extraHeaders map[string]string,
+) (int, string, error) {
 	var payload io.Reader
 	if body != nil {
 		encoded, err := json.Marshal(body)
 		if err != nil {
-			return fmt.Errorf("marshal request: %w", err)
+			return 0, "", fmt.Errorf("marshal request: %w", err)
 		}
 		payload = bytes.NewReader(encoded)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, method, c.baseURL+path, payload)
 	if err != nil {
-		return fmt.Errorf("create request: %w", err)
+		return 0, "", fmt.Errorf("create request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 	if auth {
 		if c.token == "" {
-			return fmt.Errorf("agent token is required")
+			return 0, "", fmt.Errorf("agent token is required")
 		}
 		req.Header.Set("Authorization", "Bearer "+c.token)
 		if c.mtlsFingerprint != "" {
 			req.Header.Set("x-mtls-cert-fingerprint", c.mtlsFingerprint)
 		}
 	}
+	for key, value := range extraHeaders {
+		req.Header.Set(key, value)
+	}
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("%s %s: %w", method, path, err)
+		return 0, "", fmt.Errorf("%s %s: %w", method, path, err)
 	}
 	defer resp.Body.Close()
 
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("read response: %w", err)
+		return 0, "", fmt.Errorf("read response: %w", err)
+	}
+
+	if resp.StatusCode == http.StatusNotModified {
+		return resp.StatusCode, resp.Header.Get("ETag"), nil
 	}
 
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		if dest == nil {
-			return nil
+			return resp.StatusCode, resp.Header.Get("ETag"), nil
 		}
 		if err := json.Unmarshal(responseBody, dest); err != nil {
-			return fmt.Errorf("decode response: %w", err)
+			return resp.StatusCode, "", fmt.Errorf("decode response: %w", err)
 		}
-		return nil
+		return resp.StatusCode, resp.Header.Get("ETag"), nil
 	}
 
 	var apiErr apiError
 	if err := json.Unmarshal(responseBody, &apiErr); err == nil && apiErr.Message != "" {
-		return fmt.Errorf("%s %s: %s", method, path, apiErr.Message)
+		return resp.StatusCode, "", fmt.Errorf("%s %s: %s", method, path, apiErr.Message)
 	}
 
 	snippet := strings.TrimSpace(string(responseBody))
 	if len(snippet) > 256 {
 		snippet = snippet[:256] + "..."
 	}
-	return fmt.Errorf("%s %s: status %d: %s", method, path, resp.StatusCode, snippet)
+	return resp.StatusCode, "", fmt.Errorf("%s %s: status %d: %s", method, path, resp.StatusCode, snippet)
 }

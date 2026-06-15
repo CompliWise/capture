@@ -29,10 +29,12 @@ type ClientConfig struct {
 
 // Client performs authenticated HTTP requests to the CompliWise API.
 type Client struct {
-	httpClient      *http.Client
-	baseURL         string
-	token           string
-	mtlsFingerprint string
+	httpClient            *http.Client
+	baseURL               string
+	token                 string
+	mtlsFingerprint       string
+	assignmentsEtag       string
+	cachedAssignmentsPull *AssignmentsPullResponse
 }
 
 // NewClient builds an HTTP client honoring proxy, custom CA, optional mTLS, and pinning.
