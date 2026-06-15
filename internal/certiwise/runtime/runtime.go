@@ -9,6 +9,7 @@ import (
 
 	"github.com/bluewave-labs/capture/internal/certiwise"
 	cwconfig "github.com/bluewave-labs/capture/internal/certiwise/config"
+	"github.com/bluewave-labs/capture/internal/certiwise/connectivity"
 	"github.com/bluewave-labs/capture/internal/certiwise/discovery"
 	"github.com/bluewave-labs/capture/internal/certiwise/probe"
 	"github.com/bluewave-labs/capture/internal/certiwise/store"
@@ -90,6 +91,7 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 
 	tracker := newAssignmentTracker()
 	discoveryScheduler := discovery.NewScheduler()
+	connectivityScheduler := connectivity.NewScheduler()
 	probeScheduler := probe.NewScheduler()
 
 	var syntheticRunner *synthetic.Runner
@@ -113,6 +115,9 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 	if err != nil {
 		log.Printf("certiwise: initial assignment sync failed: %v", err)
 	} else if pull != nil {
+		if err := connectivityScheduler.RunIfRequested(ctx, client, cfg, pull); err != nil {
+			log.Printf("certiwise: connectivity test failed: %v", err)
+		}
 		if err := discoveryScheduler.RunIfDue(ctx, client, cfg, pull); err != nil {
 			log.Printf("certiwise: discovery scan failed: %v", err)
 		}
@@ -179,6 +184,9 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 			}
 			if pull == nil {
 				continue
+			}
+			if err := connectivityScheduler.RunIfRequested(ctx, client, cfg, pull); err != nil {
+				log.Printf("certiwise: connectivity test failed: %v", err)
 			}
 			if err := discoveryScheduler.RunIfDue(ctx, client, cfg, pull); err != nil {
 				log.Printf("certiwise: discovery scan failed: %v", err)

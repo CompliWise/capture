@@ -49,11 +49,12 @@ type AssignmentPullItem struct {
 
 // AssignmentsPullResponse is the body of GET /agent/assignments.
 type AssignmentsPullResponse struct {
-	Etag                     string               `json:"etag"`
-	ConfigEtag               string               `json:"configEtag"`
-	Assignments              []AssignmentPullItem `json:"assignments"`
-	DiscoveryScanRequestedAt *string              `json:"discoveryScanRequestedAt"`
-	LastDiscoveryScanAt      *string              `json:"lastDiscoveryScanAt"`
+	Etag                      string               `json:"etag"`
+	ConfigEtag                string               `json:"configEtag"`
+	Assignments               []AssignmentPullItem `json:"assignments"`
+	ConnectivityTestRequested   bool                 `json:"connectivityTestRequested"`
+	DiscoveryScanRequestedAt  *string              `json:"discoveryScanRequestedAt"`
+	LastDiscoveryScanAt       *string              `json:"lastDiscoveryScanAt"`
 }
 
 // DiscoveryRequestedAt returns the on-demand scan request timestamp, if any.

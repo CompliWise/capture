@@ -1,6 +1,7 @@
 package certiwise
 
 import (
+	"context"
 	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
@@ -28,9 +29,10 @@ type ClientConfig struct {
 
 // Client performs authenticated HTTP requests to the CompliWise API.
 type Client struct {
-	httpClient *http.Client
-	baseURL    string
-	token      string
+	httpClient      *http.Client
+	baseURL         string
+	token           string
+	mtlsFingerprint string
 }
 
 // NewClient builds an HTTP client honoring proxy, custom CA, optional mTLS, and pinning.
@@ -51,12 +53,17 @@ func NewClient(cfg ClientConfig) (*Client, error) {
 		transport.TLSClientConfig.RootCAs = pool
 	}
 
+	var mtlsFingerprint string
 	if cfg.MtlsCertPath != "" && cfg.MtlsKeyPath != "" {
 		cert, err := tls.LoadX509KeyPair(cfg.MtlsCertPath, cfg.MtlsKeyPath)
 		if err != nil {
 			return nil, fmt.Errorf("load mTLS key pair: %w", err)
 		}
 		transport.TLSClientConfig.Certificates = []tls.Certificate{cert}
+		if len(cert.Certificate) > 0 {
+			sum := sha256.Sum256(cert.Certificate[0])
+			mtlsFingerprint = hex.EncodeToString(sum[:])
+		}
 	}
 
 	if cfg.MtlsCAPath != "" {
@@ -90,9 +97,32 @@ func NewClient(cfg ClientConfig) (*Client, error) {
 			Transport: transport,
 			Timeout:   30 * time.Second,
 		},
-		baseURL: strings.TrimRight(cfg.BaseURL, "/"),
-		token:   cfg.AgentToken,
+		baseURL:         strings.TrimRight(cfg.BaseURL, "/"),
+		token:           cfg.AgentToken,
+		mtlsFingerprint: mtlsFingerprint,
 	}, nil
+}
+
+// SetAuthHeaders applies bearer token and mTLS fingerprint to an authenticated request.
+func (c *Client) SetAuthHeaders(req *http.Request) error {
+	if c.token == "" {
+		return fmt.Errorf("agent token is required")
+	}
+	req.Header.Set("Authorization", "Bearer "+c.token)
+	if c.mtlsFingerprint != "" {
+		req.Header.Set("x-mtls-cert-fingerprint", c.mtlsFingerprint)
+	}
+	return nil
+}
+
+// MtlsFingerprint returns the SHA-256 fingerprint of the configured client certificate.
+func (c *Client) MtlsFingerprint() string {
+	return c.mtlsFingerprint
+}
+
+// HTTPClient exposes the underlying HTTP client for connectivity probes.
+func (c *Client) HTTPClient() *http.Client {
+	return c.httpClient
 }
 
 func proxyFromEnv(override string) func(*http.Request) (*url.URL, error) {
@@ -117,6 +147,31 @@ func loadCertPool(path string) (*x509.CertPool, error) {
 		return nil, fmt.Errorf("no certificates found in %s", path)
 	}
 	return pool, nil
+}
+
+// HTTPTransport exposes the underlying HTTP transport for connectivity probes.
+func (c *Client) HTTPTransport() *http.Transport {
+	transport, ok := c.httpClient.Transport.(*http.Transport)
+	if !ok {
+		return nil
+	}
+	return transport
+}
+
+// ProbeTLSHealth performs a TLS request to the API health endpoint using the
+// configured transport (proxy, mTLS, CA bundle, pinning).
+func (c *Client) ProbeTLSHealth(ctx context.Context) (int, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodHead, c.baseURL+"/health", nil)
+	if err != nil {
+		return 0, fmt.Errorf("create health request: %w", err)
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	return resp.StatusCode, nil
 }
 
 // NewClientFromEnv reads COMPLIWISE_* and HTTP(S)_PROXY environment variables.

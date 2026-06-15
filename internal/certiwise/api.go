@@ -136,6 +136,9 @@ func (c *Client) doJSONWithContext(ctx context.Context, method, path string, bod
 			return fmt.Errorf("agent token is required")
 		}
 		req.Header.Set("Authorization", "Bearer "+c.token)
+		if c.mtlsFingerprint != "" {
+			req.Header.Set("x-mtls-cert-fingerprint", c.mtlsFingerprint)
+		}
 	}
 
 	resp, err := c.httpClient.Do(req)
