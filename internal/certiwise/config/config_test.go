@@ -179,6 +179,32 @@ COMPLIWISE_DISCOVERY_TLS_INSECURE=false
 	}
 }
 
+func TestLoadDiscoveryJavaWindowsConfigDefaults(t *testing.T) {
+	dir := t.TempDir()
+	envPath := filepath.Join(dir, "agent.env")
+	if err := os.WriteFile(envPath, []byte("COMPLIWISE_API_URL=http://file.example\n"), 0o600); err != nil {
+		t.Fatalf("write env file: %v", err)
+	}
+	t.Setenv("COMPLIWISE_AGENT_ENV_FILE", envPath)
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if !cfg.DiscoveryJavaEnabled {
+		t.Fatal("expected java discovery enabled by default")
+	}
+	if cfg.DiscoveryJavaMaxJvms != 5 {
+		t.Fatalf("expected default max jvms 5, got %d", cfg.DiscoveryJavaMaxJvms)
+	}
+	if !cfg.DiscoveryWindowsEnabled {
+		t.Fatal("expected windows discovery enabled by default")
+	}
+	if cfg.DiscoveryWindowsIncludeMy {
+		t.Fatal("expected windows My store excluded by default")
+	}
+}
+
 func TestLoadProbeConfigDefaults(t *testing.T) {
 	dir := t.TempDir()
 	envPath := filepath.Join(dir, "agent.env")

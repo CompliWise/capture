@@ -26,6 +26,8 @@ const (
 	maxSyntheticMaxWorkers       = 50
 	defaultDiscoveryTLSTimeout   = 3 * time.Second
 	minDiscoveryTLSTimeout       = 500 * time.Millisecond
+	defaultDiscoveryJavaMaxJvms  = 5
+	maxDiscoveryJavaMaxJvms      = 20
 	minProbeInterval             = 30 * time.Second
 	minProbeTimeout              = time.Second
 )
@@ -59,6 +61,11 @@ type Config struct {
 	DiscoveryTLSHosts []string
 	DiscoveryTLSTimeout time.Duration
 	DiscoveryTLSInsecure bool
+	DiscoveryJavaEnabled bool
+	DiscoveryJavaMaxJvms int
+	DiscoveryJavaStorePassword string
+	DiscoveryWindowsEnabled bool
+	DiscoveryWindowsIncludeMy bool
 	ProbeEnabled      bool
 	ProbeInterval     time.Duration
 	ProbeTimeout      time.Duration
@@ -121,6 +128,11 @@ func Load() (*Config, error) {
 		DiscoveryTLSHosts:     discoveryTLSHostsFromEnv(merged),
 		DiscoveryTLSTimeout:   discoveryTLSTimeoutFromEnv(merged),
 		DiscoveryTLSInsecure:  discoveryTLSInsecureFromEnv(merged),
+		DiscoveryJavaEnabled:  discoveryJavaEnabledFromEnv(merged),
+		DiscoveryJavaMaxJvms:  discoveryJavaMaxJvmsFromEnv(merged),
+		DiscoveryJavaStorePassword: strings.TrimSpace(merged["COMPLIWISE_DISCOVERY_JAVA_STORE_PASSWORD"]),
+		DiscoveryWindowsEnabled: discoveryWindowsEnabledFromEnv(merged),
+		DiscoveryWindowsIncludeMy: discoveryWindowsIncludeMyFromEnv(merged),
 		ProbeEnabled:        probeEnabledFromEnv(merged),
 		ProbeInterval:       probeIntervalFromEnv(merged),
 		ProbeTimeout:        probeTimeoutFromEnv(merged),
@@ -300,6 +312,45 @@ func discoveryTLSInsecureFromEnv(values map[string]string) bool {
 		return true
 	}
 	return !strings.EqualFold(raw, "false")
+}
+
+func discoveryJavaEnabledFromEnv(values map[string]string) bool {
+	raw := strings.TrimSpace(values["COMPLIWISE_DISCOVERY_JAVA_ENABLED"])
+	if raw == "" {
+		return true
+	}
+	return !strings.EqualFold(raw, "false")
+}
+
+func discoveryJavaMaxJvmsFromEnv(values map[string]string) int {
+	raw := strings.TrimSpace(values["COMPLIWISE_DISCOVERY_JAVA_MAX_JVMS"])
+	if raw == "" {
+		return defaultDiscoveryJavaMaxJvms
+	}
+	parsed, err := strconv.Atoi(raw)
+	if err != nil || parsed < 1 {
+		return defaultDiscoveryJavaMaxJvms
+	}
+	if parsed > maxDiscoveryJavaMaxJvms {
+		return maxDiscoveryJavaMaxJvms
+	}
+	return parsed
+}
+
+func discoveryWindowsEnabledFromEnv(values map[string]string) bool {
+	raw := strings.TrimSpace(values["COMPLIWISE_DISCOVERY_WINDOWS_ENABLED"])
+	if raw == "" {
+		return true
+	}
+	return !strings.EqualFold(raw, "false")
+}
+
+func discoveryWindowsIncludeMyFromEnv(values map[string]string) bool {
+	raw := strings.TrimSpace(values["COMPLIWISE_DISCOVERY_WINDOWS_INCLUDE_MY"])
+	if raw == "" {
+		return false
+	}
+	return strings.EqualFold(raw, "true")
 }
 
 func probeEnabledFromEnv(values map[string]string) bool {

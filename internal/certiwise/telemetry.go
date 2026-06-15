@@ -44,10 +44,18 @@ type SyntheticCheckPayload struct {
 	ErrorMessage      *string `json:"errorMessage"`
 }
 
+// DiscoveryScanMetadata is optional discovery.scan payload metadata.
+type DiscoveryScanMetadata struct {
+	JavaCacertsTruncated  bool `json:"javaCacertsTruncated,omitempty"`
+	JavaCacertsJvmTotal   int  `json:"javaCacertsJvmTotal,omitempty"`
+	JavaCacertsJvmScanned int  `json:"javaCacertsJvmScanned,omitempty"`
+}
+
 // DiscoveryScanPayload is the discovery.scan event payload.
 type DiscoveryScanPayload struct {
-	CertificatesFound int                 `json:"certificatesFound"`
-	Items             []DiscoveryScanItem `json:"items"`
+	CertificatesFound int                    `json:"certificatesFound"`
+	Items             []DiscoveryScanItem    `json:"items"`
+	Metadata          *DiscoveryScanMetadata `json:"metadata,omitempty"`
 }
 
 // DiscoveryScanItem is one discovered certificate in telemetry.

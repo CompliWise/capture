@@ -6,6 +6,38 @@ import (
 	"github.com/bluewave-labs/capture/internal/certiwise"
 )
 
+const (
+	SourceJavaCacerts      = "java_cacerts"
+	SourceWindowsCertStore = "windows_cert_store"
+)
+
+// JavaScanOptions configures Java cacerts discovery.
+type JavaScanOptions struct {
+	Enabled       bool
+	MaxJvms       int
+	StorePassword string
+}
+
+// WindowsScanOptions configures Windows certificate store discovery.
+type WindowsScanOptions struct {
+	Enabled   bool
+	IncludeMy bool
+	Executor  CommandExecutor
+}
+
+// ScanMetadata carries optional discovery.scan payload metadata.
+type ScanMetadata struct {
+	JavaCacertsTruncated  bool `json:"javaCacertsTruncated,omitempty"`
+	JavaCacertsJvmTotal   int  `json:"javaCacertsJvmTotal,omitempty"`
+	JavaCacertsJvmScanned int  `json:"javaCacertsJvmScanned,omitempty"`
+}
+
+// ScanResult is the merged output of all discovery scanners.
+type ScanResult struct {
+	Items    []DiscoveredItem
+	Metadata ScanMetadata
+}
+
 // DiscoveredItem is one certificate observed during a discovery scan.
 type DiscoveredItem struct {
 	Source         string `json:"source"`
@@ -51,4 +83,6 @@ type ScanOptions struct {
 	MaxItems    int
 	Assignments []AssignmentRef
 	TLSListener TLSListenerOptions
+	Java        JavaScanOptions
+	Windows     WindowsScanOptions
 }

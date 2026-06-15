@@ -126,6 +126,15 @@ func (s *Scheduler) runScan(
 			MaxWorkers:          5,
 			Assignments:         pull.Assignments,
 		},
+		Java: JavaScanOptions{
+			Enabled:       cfg.DiscoveryJavaEnabled,
+			MaxJvms:       cfg.DiscoveryJavaMaxJvms,
+			StorePassword: cfg.DiscoveryJavaStorePassword,
+		},
+		Windows: WindowsScanOptions{
+			Enabled:   cfg.DiscoveryWindowsEnabled,
+			IncludeMy: cfg.DiscoveryWindowsIncludeMy,
+		},
 	}
 
 	err := PostDiscoveryScan(client, opts, &s.licenseLogger)

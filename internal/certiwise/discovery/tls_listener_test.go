@@ -169,7 +169,7 @@ func TestScanMergeIncludesTLSListenerItems(t *testing.T) {
 		t.Fatalf("parse port: %v", err)
 	}
 
-	items := Scan(ScanOptions{
+	result := Scan(ScanOptions{
 		MaxItems: 10,
 		TLSListener: TLSListenerOptions{
 			Enabled:             true,
@@ -182,7 +182,7 @@ func TestScanMergeIncludesTLSListenerItems(t *testing.T) {
 	})
 
 	found := false
-	for _, item := range items {
+	for _, item := range result.Items {
 	 if item.Source == tlsListenerSource {
 			found = true
 			break

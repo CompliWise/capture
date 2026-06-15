@@ -12,13 +12,15 @@ import (
 
 func TestBuildDiscoveryScanEventShape(t *testing.T) {
 	observedAt := time.Date(2026, 6, 13, 10, 0, 0, 0, time.UTC)
-	event := BuildDiscoveryScanEvent([]DiscoveredItem{
-		{
-			Source:         "linux_system_ca",
-			Path:           "/etc/ssl/certs/test.pem",
-			Thumbprint:     "ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789",
-			SubjectCN:      "Test CA",
-			TrustStoreType: "linux_update_ca_certificates",
+	event := BuildDiscoveryScanEvent(ScanResult{
+		Items: []DiscoveredItem{
+			{
+				Source:         "linux_system_ca",
+				Path:           "/etc/ssl/certs/test.pem",
+				Thumbprint:     "ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789",
+				SubjectCN:      "Test CA",
+				TrustStoreType: "linux_update_ca_certificates",
+			},
 		},
 	}, observedAt)
 
@@ -41,6 +43,31 @@ func TestBuildDiscoveryScanEventShape(t *testing.T) {
 	}
 	if payload.Items[0].Thumbprint != "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789" {
 		t.Fatalf("expected lowercase thumbprint, got %q", payload.Items[0].Thumbprint)
+	}
+}
+
+func TestBuildDiscoveryScanEventIncludesMetadata(t *testing.T) {
+	observedAt := time.Date(2026, 6, 15, 10, 0, 0, 0, time.UTC)
+	event := BuildDiscoveryScanEvent(ScanResult{
+		Metadata: ScanMetadata{
+			JavaCacertsTruncated:  true,
+			JavaCacertsJvmTotal:   8,
+			JavaCacertsJvmScanned: 5,
+		},
+	}, observedAt)
+
+	payload, ok := event.Payload.(certiwise.DiscoveryScanPayload)
+	if !ok {
+		t.Fatalf("expected DiscoveryScanPayload, got %T", event.Payload)
+	}
+	if payload.Metadata == nil {
+		t.Fatal("expected metadata on payload")
+	}
+	if !payload.Metadata.JavaCacertsTruncated {
+		t.Fatal("expected javaCacertsTruncated=true")
+	}
+	if payload.Metadata.JavaCacertsJvmTotal != 8 {
+		t.Fatalf("expected jvm total 8, got %d", payload.Metadata.JavaCacertsJvmTotal)
 	}
 }
 

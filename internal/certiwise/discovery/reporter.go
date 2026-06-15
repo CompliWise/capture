@@ -29,7 +29,8 @@ func (l *LicenseDeniedLogger) MaybeWarn(err error) {
 }
 
 // BuildDiscoveryScanEvent constructs a discovery.scan telemetry event.
-func BuildDiscoveryScanEvent(items []DiscoveredItem, observedAt time.Time) certiwise.TelemetryEvent {
+func BuildDiscoveryScanEvent(result ScanResult, observedAt time.Time) certiwise.TelemetryEvent {
+	items := result.Items
 	payloadItems := make([]certiwise.DiscoveryScanItem, 0, len(items))
 	for _, item := range items {
 		payloadItems = append(payloadItems, certiwise.DiscoveryScanItem{
@@ -42,13 +43,28 @@ func BuildDiscoveryScanEvent(items []DiscoveredItem, observedAt time.Time) certi
 			TrustStoreType: item.TrustStoreType,
 		})
 	}
+	payload := certiwise.DiscoveryScanPayload{
+		CertificatesFound: len(payloadItems),
+		Items:             payloadItems,
+	}
+	if metadata := certiwiseDiscoveryMetadata(result.Metadata); metadata != nil {
+		payload.Metadata = metadata
+	}
 	return certiwise.TelemetryEvent{
 		Type:       "discovery.scan",
 		ObservedAt: observedAt.UTC().Format(time.RFC3339),
-		Payload: certiwise.DiscoveryScanPayload{
-			CertificatesFound: len(payloadItems),
-			Items:             payloadItems,
-		},
+		Payload:    payload,
+	}
+}
+
+func certiwiseDiscoveryMetadata(meta ScanMetadata) *certiwise.DiscoveryScanMetadata {
+	if !meta.JavaCacertsTruncated && meta.JavaCacertsJvmTotal == 0 && meta.JavaCacertsJvmScanned == 0 {
+		return nil
+	}
+	return &certiwise.DiscoveryScanMetadata{
+		JavaCacertsTruncated:  meta.JavaCacertsTruncated,
+		JavaCacertsJvmTotal:   meta.JavaCacertsJvmTotal,
+		JavaCacertsJvmScanned: meta.JavaCacertsJvmScanned,
 	}
 }
 
@@ -58,8 +74,8 @@ func PostDiscoveryScan(
 	opts ScanOptions,
 	licenseLogger *LicenseDeniedLogger,
 ) error {
-	items := Scan(opts)
-	event := BuildDiscoveryScanEvent(items, time.Now())
+	result := Scan(opts)
+	event := BuildDiscoveryScanEvent(result, time.Now())
 	err := client.PostTelemetryBatch([]certiwise.TelemetryEvent{event})
 	if licenseLogger != nil {
 		licenseLogger.MaybeWarn(err)
