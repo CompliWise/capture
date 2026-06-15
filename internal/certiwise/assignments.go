@@ -27,6 +27,18 @@ type AssignmentConfig struct {
 	KeyFileName      string   `json:"keyFileName,omitempty"`
 	KeyPermissionMode string  `json:"keyPermissionMode,omitempty"`
 	EnvFilePath      string   `json:"envFilePath,omitempty"`
+	StoreLocation    string   `json:"storeLocation,omitempty"`
+	StoreName        string   `json:"storeName,omitempty"`
+	IIS              *IISAssignmentConfig `json:"iis,omitempty"`
+}
+
+// IISAssignmentConfig configures IIS HTTPS binding for Windows server identity.
+type IISAssignmentConfig struct {
+	SiteName     string `json:"siteName"`
+	BindingHost  string `json:"bindingHost,omitempty"`
+	BindingPort  int    `json:"bindingPort,omitempty"`
+	IPAddress    string `json:"ipAddress,omitempty"`
+	SNI          bool   `json:"sni,omitempty"`
 }
 
 // AssignmentMaterial is ephemeral PEM material returned on agent pull.

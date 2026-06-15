@@ -157,6 +157,11 @@ func processAssignment(
 		Alias:             assignment.Config.Alias,
 		ReloadCommand:     assignment.Config.ReloadCommand,
 		EnvFilePath:       assignment.Config.EnvFilePath,
+		StoreLocation:     assignment.Config.StoreLocation,
+		StoreName:         assignment.Config.StoreName,
+		VerifyEndpoint:    assignment.Config.VerifyEndpoint,
+		IIS:               mapIISConfig(assignment.Config.IIS),
+		Metadata:          &installer.InstallRecord{},
 	}
 
 	installerLog, installErr := inst.Install(ctx, opts)
@@ -167,6 +172,9 @@ func processAssignment(
 	}
 
 	record := buildInstallRecord(assignment, thumbprint, opts)
+	if opts.Metadata != nil {
+		record = mergeInstallMetadata(record, *opts.Metadata)
+	}
 	if err := defaultInstallState.Upsert(record); err != nil {
 		log.Printf("certiwise: persist install state for %s: %v", assignment.AssignmentID, err)
 	}
@@ -276,9 +284,67 @@ func buildInstallRecord(
 			}
 			record.KeyPath = filepath.Join(storePath, keyName)
 		}
+	case "windows_cert_store":
+		storeName := strings.TrimSpace(assignment.Config.StoreName)
+		if storeName == "" {
+			if assignment.MaterialType == "server_identity" {
+				storeName = "My"
+			} else {
+				storeName = "Root"
+			}
+		}
+		record.StoreName = storeName
+		record.CertPath = fmt.Sprintf(`Cert:\LocalMachine\%s\%s`, storeName, strings.ToUpper(thumbprint))
+		if assignment.Config.IIS != nil {
+			record.IISSiteName = strings.TrimSpace(assignment.Config.IIS.SiteName)
+			record.IISBindingHost = strings.TrimSpace(assignment.Config.IIS.BindingHost)
+			if assignment.Config.IIS.BindingPort > 0 {
+				record.IISBindingPort = assignment.Config.IIS.BindingPort
+			} else {
+				record.IISBindingPort = 443
+			}
+		}
 	}
 
 	return record
+}
+
+func mapIISConfig(config *certiwise.IISAssignmentConfig) installer.IISConfig {
+	if config == nil {
+		return installer.IISConfig{}
+	}
+	return installer.IISConfig{
+		SiteName:    config.SiteName,
+		BindingHost: config.BindingHost,
+		BindingPort: config.BindingPort,
+		IPAddress:   config.IPAddress,
+		SNI:         config.SNI,
+	}
+}
+
+func mergeInstallMetadata(base, runtime installer.InstallRecord) installer.InstallRecord {
+	if strings.TrimSpace(runtime.Thumbprint) != "" {
+		base.Thumbprint = runtime.Thumbprint
+	}
+	if strings.TrimSpace(runtime.CertPath) != "" {
+		base.CertPath = runtime.CertPath
+	}
+	if strings.TrimSpace(runtime.StoreName) != "" {
+		base.StoreName = runtime.StoreName
+	}
+	if strings.TrimSpace(runtime.BindingSnapshotThumbprint) != "" {
+		base.BindingSnapshotThumbprint = runtime.BindingSnapshotThumbprint
+	}
+	if strings.TrimSpace(runtime.IISSiteName) != "" {
+		base.IISSiteName = runtime.IISSiteName
+	}
+	if strings.TrimSpace(runtime.IISBindingHost) != "" {
+		base.IISBindingHost = runtime.IISBindingHost
+	}
+	if runtime.IISBindingPort > 0 {
+		base.IISBindingPort = runtime.IISBindingPort
+	}
+	return base
 }
 
 func pythonBundlePath(configured string) (string, error) {

@@ -7,6 +7,7 @@ import (
 	"github.com/bluewave-labs/capture/internal/installer/node"
 	"github.com/bluewave-labs/capture/internal/installer/pem"
 	"github.com/bluewave-labs/capture/internal/installer/python"
+	wininstaller "github.com/bluewave-labs/capture/internal/installer/windows"
 )
 
 func newDefaultInstallRegistry() *installer.Registry {
@@ -16,5 +17,6 @@ func newDefaultInstallRegistry() *installer.Registry {
 	registry.Register(&python.Installer{})
 	registry.Register(&node.Installer{})
 	registry.Register(&pem.Installer{})
+	registry.Register(&wininstaller.Installer{})
 	return registry
 }

@@ -26,6 +26,7 @@ func (r *Registry) Register(inst Installer) {
 		"python_certifi_bundle",
 		"node_extra_ca_certs",
 		"pem_directory",
+		"windows_cert_store",
 	} {
 		if inst.Supports("trust_anchor", trustStoreType) {
 			r.installers[trustStoreType] = inst

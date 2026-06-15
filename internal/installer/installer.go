@@ -12,6 +12,25 @@ type InstallRecord struct {
 	Alias          string `json:"alias,omitempty"`
 	TrustStorePath string `json:"trustStorePath,omitempty"`
 	EnvFilePath    string `json:"envFilePath,omitempty"`
+	StoreName                 string `json:"storeName,omitempty"`
+	BindingSnapshotThumbprint string `json:"bindingSnapshotThumbprint,omitempty"`
+	IISSiteName               string `json:"iisSiteName,omitempty"`
+	IISBindingHost            string `json:"iisBindingHost,omitempty"`
+	IISBindingPort            int    `json:"iisBindingPort,omitempty"`
+}
+
+// IISConfig configures IIS HTTPS binding for Windows server identity installs.
+type IISConfig struct {
+	SiteName     string
+	BindingHost  string
+	BindingPort  int
+	IPAddress    string
+	SNI          bool
+}
+
+// CommandExecutor runs external commands (test injection for Windows installers).
+type CommandExecutor interface {
+	Run(name string, args ...string) ([]byte, error)
 }
 
 // InstallOptions configures a trust-store install attempt.
@@ -31,6 +50,13 @@ type InstallOptions struct {
 	ReloadCommand     []string
 	StorePassword     string
 	EnvFilePath       string
+	StoreLocation     string
+	StoreName         string
+	IIS               IISConfig
+	VerifyEndpoint    string
+	Executor          CommandExecutor
+	// Metadata is populated by installers that capture runtime rollback fields.
+	Metadata          *InstallRecord
 }
 
 // RemoveOptions configures a trust-store removal attempt.

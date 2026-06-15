@@ -25,9 +25,16 @@ func TestDefaultRegistryDispatchesJavaNotLinux(t *testing.T) {
 	}
 }
 
-func TestUnsupportedTrustStoreType(t *testing.T) {
-	if _, ok := defaultInstallRegistry.Lookup("windows_cert_store"); ok {
-		t.Fatal("windows installer should not be registered")
+func TestWindowsInstallerRegistered(t *testing.T) {
+	inst, ok := defaultInstallRegistry.Lookup("windows_cert_store")
+	if !ok {
+		t.Fatal("expected windows installer to be registered")
+	}
+	if !inst.Supports("trust_anchor", "windows_cert_store") {
+		t.Fatal("windows installer should support trust_anchor")
+	}
+	if !inst.Supports("server_identity", "windows_cert_store") {
+		t.Fatal("windows installer should support server_identity")
 	}
 }
 
