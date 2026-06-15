@@ -2,16 +2,19 @@ package certiwise
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
 const (
-	enrollPath    = "/api/v1/agent/enroll"
-	heartbeatPath = "/api/v1/agent/heartbeat"
+	enrollPath          = "/api/v1/agent/enroll"
+	heartbeatPath       = "/api/v1/agent/heartbeat"
+	upgradeArtifactPath = "/api/v1/agent/upgrade-artifact"
 )
 
 // EnrollRequest is the body for POST /api/v1/agent/enroll.
@@ -33,15 +36,33 @@ type EnrollResponse struct {
 
 // HeartbeatRequest is the body for POST /api/v1/agent/heartbeat.
 type HeartbeatRequest struct {
-	AgentVersion string `json:"agentVersion"`
-	Hostname     string `json:"hostname,omitempty"`
-	Platform     string `json:"platform,omitempty"`
+	AgentVersion  string `json:"agentVersion"`
+	Hostname      string `json:"hostname,omitempty"`
+	Platform      string `json:"platform,omitempty"`
+	UpgradeStatus string `json:"upgradeStatus,omitempty"`
+	LastUpgradeAt string `json:"lastUpgradeAt,omitempty"`
+	UpgradeError  string `json:"upgradeError,omitempty"`
+}
+
+// HeartbeatUpgradeDirective tells the agent whether to upgrade.
+type HeartbeatUpgradeDirective struct {
+	TargetVersion        string `json:"targetVersion"`
+	MaintenanceWindowUTC string `json:"maintenanceWindowUtc"`
+	Force                bool   `json:"force"`
 }
 
 // HeartbeatResponse is returned after a successful heartbeat.
 type HeartbeatResponse struct {
-	LastHeartbeatAt string `json:"lastHeartbeatAt"`
-	Status          string `json:"status"`
+	LastHeartbeatAt string                     `json:"lastHeartbeatAt"`
+	Status          string                     `json:"status"`
+	Upgrade         *HeartbeatUpgradeDirective `json:"upgrade"`
+}
+
+// UpgradeArtifactResponse is returned by GET /api/v1/agent/upgrade-artifact.
+type UpgradeArtifactResponse struct {
+	DownloadURL string `json:"downloadUrl"`
+	SHA256      string `json:"sha256"`
+	ExpiresAt   string `json:"expiresAt"`
 }
 
 type apiError struct {
@@ -75,7 +96,25 @@ func (c *Client) Heartbeat(req HeartbeatRequest) (*HeartbeatResponse, error) {
 	return &resp, nil
 }
 
+// GetUpgradeArtifact fetches a signed download URL for the target release.
+func (c *Client) GetUpgradeArtifact(ctx context.Context, targetVersion, platform string) (*UpgradeArtifactResponse, error) {
+	query := url.Values{}
+	query.Set("targetVersion", targetVersion)
+	query.Set("platform", platform)
+	path := upgradeArtifactPath + "?" + query.Encode()
+
+	var resp UpgradeArtifactResponse
+	if err := c.doJSONWithContext(ctx, http.MethodGet, path, nil, true, &resp); err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
 func (c *Client) doJSON(method, path string, body any, auth bool, dest any) error {
+	return c.doJSONWithContext(context.Background(), method, path, body, auth, dest)
+}
+
+func (c *Client) doJSONWithContext(ctx context.Context, method, path string, body any, auth bool, dest any) error {
 	var payload io.Reader
 	if body != nil {
 		encoded, err := json.Marshal(body)
@@ -85,7 +124,7 @@ func (c *Client) doJSON(method, path string, body any, auth bool, dest any) erro
 		payload = bytes.NewReader(encoded)
 	}
 
-	req, err := http.NewRequest(method, c.baseURL+path, payload)
+	req, err := http.NewRequestWithContext(ctx, method, c.baseURL+path, payload)
 	if err != nil {
 		return fmt.Errorf("create request: %w", err)
 	}

@@ -79,9 +79,12 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 		log.Printf("certiwise: enrolled agent %s with CompliWise API", cfg.AgentID)
 	}
 
-	if err := sendHeartbeat(client, agentVersion, hostname, platform); err != nil {
+	hbState := newHeartbeatState()
+
+	if version, err := sendHeartbeat(client, agentVersion, hostname, platform, hbState); err != nil {
 		log.Printf("certiwise: initial heartbeat failed: %v", err)
 	} else {
+		agentVersion = version
 		log.Printf("certiwise: heartbeat accepted for agent %s", cfg.AgentID)
 	}
 
@@ -163,8 +166,10 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-heartbeatTicker.C:
-			if err := sendHeartbeat(client, agentVersion, hostname, platform); err != nil {
+			if version, err := sendHeartbeat(client, agentVersion, hostname, platform, hbState); err != nil {
 				log.Printf("certiwise: heartbeat failed: %v", err)
+			} else {
+				agentVersion = version
 			}
 		case <-pollTicker.C:
 			pull, succeeded, err := syncAssignments(ctx, client, tracker)
@@ -226,18 +231,27 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 	}
 }
 
-func sendHeartbeat(client *certiwise.Client, agentVersion, hostname, platform string) error {
-	resp, err := client.Heartbeat(certiwise.HeartbeatRequest{
+func sendHeartbeat(client *certiwise.Client, agentVersion, hostname, platform string, state *heartbeatState) (string, error) {
+	req := certiwise.HeartbeatRequest{
 		AgentVersion: agentVersion,
 		Hostname:     hostname,
 		Platform:     platform,
-	})
+	}
+	if state != nil && state.upgradeStatus != "" {
+		req.UpgradeStatus = state.upgradeStatus
+	}
+
+	resp, err := client.Heartbeat(req)
 	if err != nil {
-		return err
+		return agentVersion, err
+	}
+
+	if state != nil && resp != nil && resp.Upgrade != nil {
+		agentVersion = maybeRunUpgrade(context.Background(), client, platform, agentVersion, state, resp)
 	}
 
 	log.Printf("certiwise: heartbeat status=%s lastHeartbeatAt=%s", resp.Status, resp.LastHeartbeatAt)
-	return nil
+	return agentVersion, nil
 }
 
 func persistAgentEnv(cfg *cwconfig.Config) error {
