@@ -65,6 +65,7 @@ type InstallOptions struct {
 	UseOpensslCa      bool
 	NodeFlags         []string
 	PreferOsStore     bool
+	DbUser            string
 	Executor          CommandExecutor
 	// Metadata is populated by installers that capture runtime rollback fields.
 	Metadata          *InstallRecord

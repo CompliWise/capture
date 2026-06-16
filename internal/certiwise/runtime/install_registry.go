@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"github.com/bluewave-labs/capture/internal/installer"
+	"github.com/bluewave-labs/capture/internal/installer/database"
 	"github.com/bluewave-labs/capture/internal/installer/dotnet"
 	"github.com/bluewave-labs/capture/internal/installer/java"
 	"github.com/bluewave-labs/capture/internal/installer/linux"
@@ -22,5 +23,6 @@ func newDefaultInstallRegistry() *installer.Registry {
 	registry.Register(&pem.Installer{})
 	registry.Register(&wininstaller.Installer{})
 	registry.Register(&macos.Installer{})
+	registry.Register(&database.Installer{})
 	return registry
 }

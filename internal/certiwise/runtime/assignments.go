@@ -12,6 +12,7 @@ import (
 
 	"github.com/bluewave-labs/capture/internal/certiwise"
 	"github.com/bluewave-labs/capture/internal/installer"
+	"github.com/bluewave-labs/capture/internal/installer/database"
 	"github.com/bluewave-labs/capture/internal/installer/dotnet"
 	"github.com/bluewave-labs/capture/internal/installer/java"
 	"github.com/bluewave-labs/capture/internal/installer/linux"
@@ -173,6 +174,7 @@ func processAssignment(
 		NodeFlags:         assignment.Config.NodeFlags,
 		PreferOsStore:     assignment.Config.PreferOsStore,
 		KeychainPath:      assignment.Config.KeychainPath,
+		DbUser:            assignment.Config.DbUser,
 		IIS:               mapIISConfig(assignment.Config.IIS),
 		Metadata:          &installer.InstallRecord{},
 	}
@@ -327,6 +329,25 @@ func buildInstallRecord(
 				keyName = installer.SanitizeFileName(keyName)
 			}
 			record.KeyPath = filepath.Join(storePath, keyName)
+		}
+	case "postgresql_ssl_root", "mysql_ssl_ca":
+		if path, err := database.ResolveTargetPath(
+			assignment.TrustStoreType,
+			opts.TrustStorePath,
+			opts.CertFileName,
+			opts.DbUser,
+		); err == nil {
+			record.CertPath = path
+		}
+	case "oracle_wallet":
+		if path, err := database.ResolveTargetPath(
+			assignment.TrustStoreType,
+			opts.TrustStorePath,
+			opts.CertFileName,
+			"",
+		); err == nil {
+			record.TrustStorePath = path
+			record.CertPath = database.OracleTrustedCertPath(path)
 		}
 	case "macos_keychain_system":
 		if path, err := macos.ResolveKeychainPath(opts.KeychainPath); err == nil {

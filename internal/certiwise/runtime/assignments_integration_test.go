@@ -365,3 +365,46 @@ func certiwiseAssignment(trustStoreType, trustStorePath string) certiwise.Assign
 		},
 	}
 }
+
+func TestDatabaseInstallersRegistered(t *testing.T) {
+	for _, trustStoreType := range []string{
+		"postgresql_ssl_root",
+		"mysql_ssl_ca",
+		"oracle_wallet",
+	} {
+		inst, ok := defaultInstallRegistry.Lookup(trustStoreType)
+		if !ok {
+			t.Fatalf("expected %s installer to be registered", trustStoreType)
+		}
+		if !inst.Supports("trust_anchor", trustStoreType) {
+			t.Fatalf("%s installer should support trust_anchor", trustStoreType)
+		}
+		if inst.Supports("server_identity", trustStoreType) {
+			t.Fatalf("%s installer should not support server_identity", trustStoreType)
+		}
+	}
+}
+
+func TestBuildInstallRecordPostgreSQLPaths(t *testing.T) {
+	assignment := certiwise.AssignmentPullItem{
+		AssignmentID:   "assign-pg",
+		TrustStoreType: "postgresql_ssl_root",
+		MaterialType:   "trust_anchor",
+		Config: certiwise.AssignmentConfig{
+			TrustStorePath: "/var/lib/postgresql/.postgresql/root.crt",
+			DbUser:         "postgres",
+		},
+	}
+	record := buildInstallRecord(
+		assignment,
+		"thumb",
+		installer.InstallOptions{
+			TrustStorePath: "/var/lib/postgresql/.postgresql/root.crt",
+			DbUser:         "postgres",
+			CertFileName:   "root.crt",
+		},
+	)
+	if record.CertPath != "/var/lib/postgresql/.postgresql/root.crt" {
+		t.Fatalf("unexpected cert path %q", record.CertPath)
+	}
+}
