@@ -66,6 +66,9 @@ type InstallOptions struct {
 	NodeFlags         []string
 	PreferOsStore     bool
 	DbUser            string
+	RacfProfile       string
+	SystemId          string
+	GatewayMode       bool
 	Executor          CommandExecutor
 	// Metadata is populated by installers that capture runtime rollback fields.
 	Metadata          *InstallRecord
@@ -75,7 +78,8 @@ type InstallOptions struct {
 type RemoveOptions struct {
 	AssignmentID   string
 	TrustStoreType string
-	Record           InstallRecord
+	Record         InstallRecord
+	Executor       CommandExecutor
 }
 
 // Installer installs and removes trust material for one trust-store type.

@@ -35,6 +35,9 @@ type AssignmentConfig struct {
 	NodeFlags        []string `json:"nodeFlags,omitempty"`
 	PreferOsStore    bool     `json:"preferOsStore,omitempty"`
 	DbUser           string   `json:"dbUser,omitempty"`
+	RacfProfile      string   `json:"racfProfile,omitempty"`
+	SystemId         string   `json:"systemId,omitempty"`
+	GatewayMode      bool     `json:"gatewayMode,omitempty"`
 	StoreLocation    string   `json:"storeLocation,omitempty"`
 	StoreName        string   `json:"storeName,omitempty"`
 	IIS              *IISAssignmentConfig `json:"iis,omitempty"`

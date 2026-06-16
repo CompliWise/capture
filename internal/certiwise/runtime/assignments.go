@@ -17,6 +17,7 @@ import (
 	"github.com/bluewave-labs/capture/internal/installer/java"
 	"github.com/bluewave-labs/capture/internal/installer/linux"
 	"github.com/bluewave-labs/capture/internal/installer/macos"
+	"github.com/bluewave-labs/capture/internal/installer/mainframe"
 	"github.com/bluewave-labs/capture/internal/installer/node"
 	"github.com/bluewave-labs/capture/internal/installer/python"
 	installerstate "github.com/bluewave-labs/capture/internal/installer/state"
@@ -175,6 +176,9 @@ func processAssignment(
 		PreferOsStore:     assignment.Config.PreferOsStore,
 		KeychainPath:      assignment.Config.KeychainPath,
 		DbUser:            assignment.Config.DbUser,
+		RacfProfile:       assignment.Config.RacfProfile,
+		SystemId:          assignment.Config.SystemId,
+		GatewayMode:       assignment.Config.GatewayMode,
 		IIS:               mapIISConfig(assignment.Config.IIS),
 		Metadata:          &installer.InstallRecord{},
 	}
@@ -348,6 +352,11 @@ func buildInstallRecord(
 		); err == nil {
 			record.TrustStorePath = path
 			record.CertPath = database.OracleTrustedCertPath(path)
+		}
+	case "mainframe_racf":
+		record.CertPath = mainframe.TempCertPath(assignment.AssignmentID)
+		if profile := strings.TrimSpace(assignment.Config.RacfProfile); profile != "" {
+			record.Alias = profile
 		}
 	case "macos_keychain_system":
 		if path, err := macos.ResolveKeychainPath(opts.KeychainPath); err == nil {

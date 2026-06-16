@@ -33,6 +33,7 @@ func (r *Registry) Register(inst Installer) {
 		"postgresql_ssl_root",
 		"mysql_ssl_ca",
 		"oracle_wallet",
+		"mainframe_racf",
 	} {
 		if inst.Supports("trust_anchor", trustStoreType) {
 			r.installers[trustStoreType] = inst

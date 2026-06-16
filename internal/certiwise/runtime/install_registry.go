@@ -7,6 +7,7 @@ import (
 	"github.com/bluewave-labs/capture/internal/installer/java"
 	"github.com/bluewave-labs/capture/internal/installer/linux"
 	"github.com/bluewave-labs/capture/internal/installer/macos"
+	"github.com/bluewave-labs/capture/internal/installer/mainframe"
 	"github.com/bluewave-labs/capture/internal/installer/node"
 	"github.com/bluewave-labs/capture/internal/installer/pem"
 	"github.com/bluewave-labs/capture/internal/installer/python"
@@ -24,5 +25,6 @@ func newDefaultInstallRegistry() *installer.Registry {
 	registry.Register(&wininstaller.Installer{})
 	registry.Register(&macos.Installer{})
 	registry.Register(&database.Installer{})
+	registry.Register(&mainframe.Installer{})
 	return registry
 }
