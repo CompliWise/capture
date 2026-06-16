@@ -147,6 +147,71 @@ func TestPythonInstallerRegistered(t *testing.T) {
 	}
 }
 
+func TestDotnetInstallerRegistered(t *testing.T) {
+	inst, ok := defaultInstallRegistry.Lookup("dotnet_root_store")
+	if !ok {
+		t.Fatal("expected dotnet installer to be registered")
+	}
+	if !inst.Supports("trust_anchor", "dotnet_root_store") {
+		t.Fatal("dotnet installer should support trust_anchor")
+	}
+	if inst.Supports("server_identity", "dotnet_root_store") {
+		t.Fatal("dotnet installer should not support server_identity")
+	}
+}
+
+func TestBuildInstallRecordDotnetPaths(t *testing.T) {
+	assignment := certiwise.AssignmentPullItem{
+		AssignmentID:   "assign-dotnet",
+		TrustStoreType: "dotnet_root_store",
+		Config: certiwise.AssignmentConfig{
+			TrustStorePath: "/etc/compliwise/dotnet/trust.pem",
+			Alias:          "dotnet-api",
+			EnvFilePath:    "/etc/compliwise/env/dotnet-api.env",
+			PreferOsStore:  false,
+		},
+	}
+	record := buildInstallRecord(
+		assignment,
+		"thumb",
+		installer.InstallOptions{
+			TrustStorePath: "/etc/compliwise/dotnet/trust.pem",
+			Alias:          "dotnet-api",
+			EnvFilePath:    "/etc/compliwise/env/dotnet-api.env",
+		},
+	)
+	if record.CertPath != "/etc/compliwise/dotnet/trust.pem" {
+		t.Fatalf("unexpected cert path %q", record.CertPath)
+	}
+	if record.EnvFilePath != "/etc/compliwise/env/dotnet-api.env" {
+		t.Fatalf("unexpected env file path %q", record.EnvFilePath)
+	}
+	if record.PreferOsStore {
+		t.Fatal("expected PreferOsStore false for bundle path install")
+	}
+
+	osAssignment := certiwise.AssignmentPullItem{
+		AssignmentID:   "assign-dotnet-os",
+		TrustStoreType: "dotnet_root_store",
+		Config: certiwise.AssignmentConfig{
+			TrustStorePath: "/usr/local/share/ca-certificates",
+			Alias:          "dotnet-ca",
+			PreferOsStore:  true,
+		},
+	}
+	osRecord := buildInstallRecord(
+		osAssignment,
+		"thumb",
+		installer.InstallOptions{
+			TrustStorePath: "/usr/local/share/ca-certificates",
+			Alias:          "dotnet-ca",
+		},
+	)
+	if !osRecord.PreferOsStore {
+		t.Fatal("expected PreferOsStore true for OS delegation")
+	}
+}
+
 func TestNodeExtraCACertsRegistrySupportsTrustAnchor(t *testing.T) {
 	inst, ok := defaultInstallRegistry.Lookup("node_extra_ca_certs")
 	if !ok {

@@ -32,6 +32,7 @@ type AssignmentConfig struct {
 	EnvFilePath      string   `json:"envFilePath,omitempty"`
 	UseOpensslCa     bool     `json:"useOpensslCa,omitempty"`
 	NodeFlags        []string `json:"nodeFlags,omitempty"`
+	PreferOsStore    bool     `json:"preferOsStore,omitempty"`
 	StoreLocation    string   `json:"storeLocation,omitempty"`
 	StoreName        string   `json:"storeName,omitempty"`
 	IIS              *IISAssignmentConfig `json:"iis,omitempty"`

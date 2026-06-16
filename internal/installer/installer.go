@@ -12,6 +12,7 @@ type InstallRecord struct {
 	Alias          string `json:"alias,omitempty"`
 	TrustStorePath string `json:"trustStorePath,omitempty"`
 	EnvFilePath    string `json:"envFilePath,omitempty"`
+	PreferOsStore             bool   `json:"preferOsStore,omitempty"`
 	StoreName                 string `json:"storeName,omitempty"`
 	BindingSnapshotThumbprint string `json:"bindingSnapshotThumbprint,omitempty"`
 	IISSiteName               string `json:"iisSiteName,omitempty"`
@@ -60,6 +61,7 @@ type InstallOptions struct {
 	VerifyServerName  string
 	UseOpensslCa      bool
 	NodeFlags         []string
+	PreferOsStore     bool
 	Executor          CommandExecutor
 	// Metadata is populated by installers that capture runtime rollback fields.
 	Metadata          *InstallRecord

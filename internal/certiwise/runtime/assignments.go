@@ -6,11 +6,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 
 	"github.com/bluewave-labs/capture/internal/certiwise"
 	"github.com/bluewave-labs/capture/internal/installer"
+	"github.com/bluewave-labs/capture/internal/installer/dotnet"
 	"github.com/bluewave-labs/capture/internal/installer/java"
 	"github.com/bluewave-labs/capture/internal/installer/linux"
 	"github.com/bluewave-labs/capture/internal/installer/node"
@@ -168,6 +170,7 @@ func processAssignment(
 		VerifyServerName:  assignment.Config.VerifyServerName,
 		UseOpensslCa:      assignment.Config.UseOpensslCa,
 		NodeFlags:         assignment.Config.NodeFlags,
+		PreferOsStore:     assignment.Config.PreferOsStore,
 		IIS:               mapIISConfig(assignment.Config.IIS),
 		Metadata:          &installer.InstallRecord{},
 	}
@@ -282,6 +285,29 @@ func buildInstallRecord(
 			record.TrustStorePath = node.ResolveTrustStorePath(opts.TrustStorePath)
 		}
 		record.EnvFilePath = strings.TrimSpace(opts.EnvFilePath)
+	case "dotnet_root_store":
+		record.PreferOsStore = assignment.Config.PreferOsStore
+		if assignment.Config.PreferOsStore {
+			if runtime.GOOS == "windows" {
+				storeName := strings.TrimSpace(assignment.Config.StoreName)
+				if storeName == "" {
+					storeName = "Root"
+				}
+				record.StoreName = storeName
+				record.CertPath = fmt.Sprintf(`Cert:\LocalMachine\%s\%s`, storeName, strings.ToUpper(thumbprint))
+			} else if path := linux.CertPathForOptions(linux.InstallOptions{
+				AssignmentID:   assignment.AssignmentID,
+				CertFileName:   opts.CertFileName,
+				TrustStorePath: opts.TrustStorePath,
+				Alias:          opts.Alias,
+			}); path != "" {
+				record.CertPath = path
+			}
+		} else if path, err := dotnet.ResolveBundlePath(opts.TrustStorePath); err == nil {
+			record.CertPath = path
+			record.TrustStorePath = path
+		}
+		record.EnvFilePath = strings.TrimSpace(opts.EnvFilePath)
 	case "pem_directory":
 		storePath := strings.TrimSpace(opts.TrustStorePath)
 		certName := strings.TrimSpace(opts.CertFileName)
@@ -359,6 +385,15 @@ func mergeInstallMetadata(base, runtime installer.InstallRecord) installer.Insta
 	}
 	if runtime.IISBindingPort > 0 {
 		base.IISBindingPort = runtime.IISBindingPort
+	}
+	if runtime.PreferOsStore {
+		base.PreferOsStore = true
+	}
+	if strings.TrimSpace(runtime.EnvFilePath) != "" {
+		base.EnvFilePath = runtime.EnvFilePath
+	}
+	if strings.TrimSpace(runtime.TrustStorePath) != "" {
+		base.TrustStorePath = runtime.TrustStorePath
 	}
 	return base
 }

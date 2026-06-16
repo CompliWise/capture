@@ -26,6 +26,7 @@ func (r *Registry) Register(inst Installer) {
 		"java_pkcs12",
 		"python_certifi_bundle",
 		"node_extra_ca_certs",
+		"dotnet_root_store",
 		"pem_directory",
 		"windows_cert_store",
 	} {
