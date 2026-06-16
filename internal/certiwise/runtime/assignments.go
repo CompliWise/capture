@@ -160,6 +160,7 @@ func processAssignment(
 		StoreLocation:     assignment.Config.StoreLocation,
 		StoreName:         assignment.Config.StoreName,
 		VerifyEndpoint:    assignment.Config.VerifyEndpoint,
+		VerifyServerName:  assignment.Config.VerifyServerName,
 		IIS:               mapIISConfig(assignment.Config.IIS),
 		Metadata:          &installer.InstallRecord{},
 	}
@@ -253,8 +254,10 @@ func buildInstallRecord(
 	switch assignment.TrustStoreType {
 	case "linux_update_ca_certificates":
 		record.CertPath = linux.CertPathForOptions(linux.InstallOptions{
+			AssignmentID:   assignment.AssignmentID,
 			CertFileName:   opts.CertFileName,
 			TrustStorePath: opts.TrustStorePath,
+			Alias:          opts.Alias,
 		})
 	case "java_cacerts":
 		record.CertPath, record.TrustStorePath = java.RecordPaths(opts)

@@ -7,6 +7,19 @@ import (
 	"github.com/bluewave-labs/capture/internal/installer"
 )
 
+func TestLinuxInstallerRegistered(t *testing.T) {
+	inst, ok := defaultInstallRegistry.Lookup("linux_update_ca_certificates")
+	if !ok {
+		t.Fatal("expected linux installer to be registered")
+	}
+	if !inst.Supports("trust_anchor", "linux_update_ca_certificates") {
+		t.Fatal("linux installer should support trust_anchor")
+	}
+	if inst.Supports("server_identity", "linux_update_ca_certificates") {
+		t.Fatal("linux installer should not support server_identity")
+	}
+}
+
 func TestDefaultRegistryDispatchesJavaNotLinux(t *testing.T) {
 	javaInst, ok := defaultInstallRegistry.Lookup("java_cacerts")
 	if !ok {
@@ -78,6 +91,25 @@ func TestBuildInstallRecordLinuxPath(t *testing.T) {
 	)
 	if record.CertPath != "/custom/ca/demo.crt" {
 		t.Fatalf("unexpected cert path %q", record.CertPath)
+	}
+
+	aliasAssignment := certiwise.AssignmentPullItem{
+		AssignmentID:   "assign-alias",
+		TrustStoreType: "linux_update_ca_certificates",
+		Config: certiwise.AssignmentConfig{
+			Alias: "internal-ca",
+		},
+	}
+	aliasRecord := buildInstallRecord(
+		aliasAssignment,
+		"thumb",
+		installer.InstallOptions{
+			AssignmentID: "assign-alias",
+			Alias:        "internal-ca",
+		},
+	)
+	if aliasRecord.CertPath != "/usr/local/share/ca-certificates/compliwise-internal-ca.crt" {
+		t.Fatalf("unexpected alias cert path %q", aliasRecord.CertPath)
 	}
 }
 

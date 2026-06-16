@@ -54,6 +54,7 @@ type InstallOptions struct {
 	StoreName         string
 	IIS               IISConfig
 	VerifyEndpoint    string
+	VerifyServerName  string
 	Executor          CommandExecutor
 	// Metadata is populated by installers that capture runtime rollback fields.
 	Metadata          *InstallRecord
