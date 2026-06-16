@@ -134,6 +134,46 @@ func TestJavaInstallerSupportsBothTypes(t *testing.T) {
 	}
 }
 
+func TestPythonInstallerRegistered(t *testing.T) {
+	inst, ok := defaultInstallRegistry.Lookup("python_certifi_bundle")
+	if !ok {
+		t.Fatal("expected python installer to be registered")
+	}
+	if !inst.Supports("trust_anchor", "python_certifi_bundle") {
+		t.Fatal("python installer should support trust_anchor")
+	}
+	if inst.Supports("server_identity", "python_certifi_bundle") {
+		t.Fatal("python installer should not support server_identity")
+	}
+}
+
+func TestBuildInstallRecordPythonPaths(t *testing.T) {
+	assignment := certiwise.AssignmentPullItem{
+		AssignmentID:   "assign-python",
+		TrustStoreType: "python_certifi_bundle",
+		Config: certiwise.AssignmentConfig{
+			TrustStorePath: "/venv/lib/python3.12/site-packages/certifi/cacert.pem",
+			PythonVenvPath: "/venv",
+			EnvFilePath:    "/etc/compliwise/env.d/requests_ca_bundle",
+		},
+	}
+	record := buildInstallRecord(
+		assignment,
+		"thumb",
+		installer.InstallOptions{
+			TrustStorePath: "/venv/lib/python3.12/site-packages/certifi/cacert.pem",
+			PythonVenvPath: "/venv",
+			EnvFilePath:    "/etc/compliwise/env.d/requests_ca_bundle",
+		},
+	)
+	if record.CertPath != "/venv/lib/python3.12/site-packages/certifi/cacert.pem" {
+		t.Fatalf("unexpected cert path %q", record.CertPath)
+	}
+	if record.EnvFilePath != "/etc/compliwise/env.d/requests_ca_bundle" {
+		t.Fatalf("unexpected env file path %q", record.EnvFilePath)
+	}
+}
+
 func TestBuildInstallRecordJavaPaths(t *testing.T) {
 	assignment := certiwise.AssignmentPullItem{
 		AssignmentID:   "assign-java",

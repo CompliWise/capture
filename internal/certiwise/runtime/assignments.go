@@ -13,6 +13,7 @@ import (
 	"github.com/bluewave-labs/capture/internal/installer"
 	"github.com/bluewave-labs/capture/internal/installer/java"
 	"github.com/bluewave-labs/capture/internal/installer/linux"
+	"github.com/bluewave-labs/capture/internal/installer/python"
 	installerstate "github.com/bluewave-labs/capture/internal/installer/state"
 )
 
@@ -157,6 +158,7 @@ func processAssignment(
 		Alias:             assignment.Config.Alias,
 		StorePasswordRef:  assignment.Config.StorePasswordRef,
 		JavaHome:          assignment.Config.JavaHome,
+		PythonVenvPath:    assignment.Config.PythonVenvPath,
 		ReloadCommand:     assignment.Config.ReloadCommand,
 		EnvFilePath:       assignment.Config.EnvFilePath,
 		StoreLocation:     assignment.Config.StoreLocation,
@@ -268,7 +270,7 @@ func buildInstallRecord(
 			record.KeyPath = record.TrustStorePath
 		}
 	case "python_certifi_bundle":
-		if path, err := pythonBundlePath(opts.TrustStorePath); err == nil {
+		if path, err := python.ResolveBundlePath(opts.TrustStorePath, opts.PythonVenvPath); err == nil {
 			record.CertPath = path
 		}
 	case "node_extra_ca_certs":
@@ -356,9 +358,3 @@ func mergeInstallMetadata(base, runtime installer.InstallRecord) installer.Insta
 	return base
 }
 
-func pythonBundlePath(configured string) (string, error) {
-	if trimmed := strings.TrimSpace(configured); trimmed != "" {
-		return trimmed, nil
-	}
-	return "", fmt.Errorf("trustStorePath is required for python_certifi_bundle state")
-}

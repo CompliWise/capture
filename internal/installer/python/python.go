@@ -19,7 +19,11 @@ func (i *Installer) Supports(materialType, trustStoreType string) bool {
 }
 
 func (i *Installer) Install(_ context.Context, opts installer.InstallOptions) (string, error) {
-	bundlePath, err := resolveBundlePath(opts.TrustStorePath)
+	if _, err := installer.ThumbprintFromPEM(opts.ChainPem); err != nil {
+		return "", installer.NewCodedError("ERR_INVALID_PEM", "malformed certificate PEM")
+	}
+
+	bundlePath, err := ResolveBundlePath(opts.TrustStorePath, opts.PythonVenvPath)
 	if err != nil {
 		return "", err
 	}
@@ -59,7 +63,42 @@ func (i *Installer) Install(_ context.Context, opts installer.InstallOptions) (s
 		return "", fmt.Errorf("append bundle: %w", err)
 	}
 
-	return fmt.Sprintf("appended cert block to %s", bundlePath), nil
+	var logLines []string
+	logLines = append(logLines, fmt.Sprintf("appended cert block to %s", bundlePath))
+
+	if envPath := strings.TrimSpace(opts.EnvFilePath); envPath != "" {
+		if err := upsertEnvExport(envPath, requestsCAEnvKey, bundlePath); err != nil {
+			return strings.Join(logLines, "\n"), err
+		}
+		logLines = append(logLines, fmt.Sprintf("updated %s", envPath))
+	}
+
+	if len(opts.ReloadCommand) > 0 {
+		reloadOutput, reloadErr := runReloadCommand(opts.ReloadCommand)
+		logLines = append(
+			logLines,
+			fmt.Sprintf("%s %s", strings.Join(opts.ReloadCommand, " "), strings.TrimSpace(reloadOutput)),
+		)
+		if reloadErr != nil {
+			return strings.Join(logLines, "\n"), reloadErr
+		}
+	}
+
+	if endpoint := strings.TrimSpace(opts.VerifyEndpoint); endpoint != "" {
+		if err := VerifyHTTPS(endpoint); err != nil {
+			return strings.Join(logLines, "\n"), err
+		}
+		logLines = append(logLines, "python HTTPS verification succeeded")
+	}
+
+	if opts.Metadata != nil {
+		*opts.Metadata = installer.InstallRecord{
+			CertPath:    bundlePath,
+			EnvFilePath: strings.TrimSpace(opts.EnvFilePath),
+		}
+	}
+
+	return strings.Join(logLines, "\n"), nil
 }
 
 func (i *Installer) Remove(_ context.Context, opts installer.RemoveOptions) (string, error) {
@@ -97,28 +136,24 @@ func (i *Installer) Remove(_ context.Context, opts installer.RemoveOptions) (str
 		return "", fmt.Errorf("write bundle file: %w", err)
 	}
 
-	return fmt.Sprintf("removed cert block from %s", bundlePath), nil
+	var logLines []string
+	logLines = append(logLines, fmt.Sprintf("removed cert block from %s", bundlePath))
+
+	if envPath := strings.TrimSpace(record.EnvFilePath); envPath != "" {
+		if err := removeEnvExport(envPath, requestsCAEnvKey); err != nil {
+			return strings.Join(logLines, "\n"), err
+		}
+		logLines = append(logLines, fmt.Sprintf("cleared %s from %s", requestsCAEnvKey, envPath))
+	}
+
+	return strings.Join(logLines, "\n"), nil
 }
 
-func resolveBundlePath(configured string) (string, error) {
-	if trimmed := strings.TrimSpace(configured); trimmed != "" {
-		return trimmed, nil
+func runReloadCommand(command []string) (string, error) {
+	if len(command) == 0 {
+		return "", nil
 	}
-
-	python, err := exec.LookPath("python3")
-	if err != nil {
-		return "", fmt.Errorf("python3 not found on PATH")
-	}
-
-	cmd := exec.Command(python, "-m", "certifi")
-	output, err := cmd.Output()
-	if err != nil {
-		return "", fmt.Errorf("resolve certifi bundle: %w", err)
-	}
-
-	path := strings.TrimSpace(string(output))
-	if path == "" {
-		return "", fmt.Errorf("certifi bundle path is empty")
-	}
-	return path, nil
+	cmd := exec.Command(command[0], command[1:]...)
+	output, err := cmd.CombinedOutput()
+	return string(output), err
 }

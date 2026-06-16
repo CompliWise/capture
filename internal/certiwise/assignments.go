@@ -24,6 +24,7 @@ type AssignmentConfig struct {
 	TrustStorePath    string   `json:"trustStorePath,omitempty"`
 	StorePasswordRef  string   `json:"storePasswordRef,omitempty"`
 	JavaHome          string   `json:"javaHome,omitempty"`
+	PythonVenvPath    string   `json:"pythonVenvPath,omitempty"`
 	ReloadCommand     []string `json:"reloadCommand,omitempty"`
 	CertFileName     string   `json:"certFileName,omitempty"`
 	KeyFileName      string   `json:"keyFileName,omitempty"`

@@ -51,6 +51,7 @@ type InstallOptions struct {
 	StorePassword     string
 	StorePasswordRef  string
 	JavaHome          string
+	PythonVenvPath    string
 	EnvFilePath       string
 	StoreLocation     string
 	StoreName         string
