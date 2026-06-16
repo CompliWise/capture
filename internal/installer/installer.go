@@ -49,6 +49,8 @@ type InstallOptions struct {
 	Alias             string
 	ReloadCommand     []string
 	StorePassword     string
+	StorePasswordRef  string
+	JavaHome          string
 	EnvFilePath       string
 	StoreLocation     string
 	StoreName         string

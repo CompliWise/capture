@@ -113,6 +113,54 @@ func TestBuildInstallRecordLinuxPath(t *testing.T) {
 	}
 }
 
+func TestJavaInstallerSupportsBothTypes(t *testing.T) {
+	inst, ok := defaultInstallRegistry.Lookup("java_cacerts")
+	if !ok {
+		t.Fatal("expected java installer")
+	}
+	if !inst.Supports("trust_anchor", "java_cacerts") {
+		t.Fatal("java installer should support trust_anchor on java_cacerts")
+	}
+
+	pkcs12Inst, ok := defaultInstallRegistry.Lookup("java_pkcs12")
+	if !ok {
+		t.Fatal("expected java_pkcs12 installer")
+	}
+	if pkcs12Inst != inst {
+		t.Fatal("expected same java installer instance for java_pkcs12")
+	}
+	if !pkcs12Inst.Supports("server_identity", "java_pkcs12") {
+		t.Fatal("java installer should support server_identity on java_pkcs12")
+	}
+}
+
+func TestBuildInstallRecordJavaPaths(t *testing.T) {
+	assignment := certiwise.AssignmentPullItem{
+		AssignmentID:   "assign-java",
+		TrustStoreType: "java_cacerts",
+		Config: certiwise.AssignmentConfig{
+			TrustStorePath: "/opt/jdk/lib/security/cacerts",
+			Alias:          "payment-api",
+		},
+	}
+	record := buildInstallRecord(
+		assignment,
+		"thumb",
+		installer.InstallOptions{
+			AssignmentID:   "assign-java",
+			TrustStoreType: "java_cacerts",
+			TrustStorePath: "/opt/jdk/lib/security/cacerts",
+			Alias:          "payment-api",
+		},
+	)
+	if record.TrustStorePath != "/opt/jdk/lib/security/cacerts" {
+		t.Fatalf("unexpected trust store path %q", record.TrustStorePath)
+	}
+	if record.Alias != "compliwise-payment-api" {
+		t.Fatalf("unexpected alias %q", record.Alias)
+	}
+}
+
 func TestPemInstallerSupportsServerIdentity(t *testing.T) {
 	inst, ok := defaultInstallRegistry.Lookup("pem_directory")
 	if !ok {

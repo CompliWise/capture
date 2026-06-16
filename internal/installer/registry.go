@@ -23,6 +23,7 @@ func (r *Registry) Register(inst Installer) {
 	for _, trustStoreType := range []string{
 		"linux_update_ca_certificates",
 		"java_cacerts",
+		"java_pkcs12",
 		"python_certifi_bundle",
 		"node_extra_ca_certs",
 		"pem_directory",

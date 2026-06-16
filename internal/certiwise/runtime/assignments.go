@@ -155,6 +155,8 @@ func processAssignment(
 		KeyPermissionMode: assignment.Config.KeyPermissionMode,
 		TrustStorePath:    assignment.Config.TrustStorePath,
 		Alias:             assignment.Config.Alias,
+		StorePasswordRef:  assignment.Config.StorePasswordRef,
+		JavaHome:          assignment.Config.JavaHome,
 		ReloadCommand:     assignment.Config.ReloadCommand,
 		EnvFilePath:       assignment.Config.EnvFilePath,
 		StoreLocation:     assignment.Config.StoreLocation,
@@ -259,8 +261,12 @@ func buildInstallRecord(
 			TrustStorePath: opts.TrustStorePath,
 			Alias:          opts.Alias,
 		})
-	case "java_cacerts":
+	case "java_cacerts", "java_pkcs12":
 		record.CertPath, record.TrustStorePath = java.RecordPaths(opts)
+		record.Alias = java.KeytoolAlias(assignment.AssignmentID, assignment.Config.Alias)
+		if assignment.TrustStoreType == "java_pkcs12" && assignment.MaterialType == "server_identity" {
+			record.KeyPath = record.TrustStorePath
+		}
 	case "python_certifi_bundle":
 		if path, err := pythonBundlePath(opts.TrustStorePath); err == nil {
 			record.CertPath = path

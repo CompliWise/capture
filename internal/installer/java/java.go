@@ -5,32 +5,111 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 
 	"github.com/bluewave-labs/capture/internal/installer"
 )
 
-// Installer implements java_cacerts for trust anchors.
+// Installer implements java_cacerts and java_pkcs12 trust store installers.
 type Installer struct{}
 
 func (i *Installer) Supports(materialType, trustStoreType string) bool {
-	return materialType == "trust_anchor" && trustStoreType == "java_cacerts"
+	switch trustStoreType {
+	case "java_cacerts":
+		return materialType == "trust_anchor"
+	case "java_pkcs12":
+		return materialType == "trust_anchor" || materialType == "server_identity"
+	default:
+		return false
+	}
 }
 
 func (i *Installer) Install(_ context.Context, opts installer.InstallOptions) (string, error) {
-	keystore := strings.TrimSpace(opts.TrustStorePath)
-	if keystore == "" {
-		return "", fmt.Errorf("trustStorePath is required for java_cacerts")
+	keystore, err := ResolveKeystorePath(
+		opts.TrustStoreType,
+		opts.TrustStorePath,
+		opts.JavaHome,
+	)
+	if err != nil {
+		return "", err
 	}
 
+	fallbackEnv := "JAVA_CACERTS_PASSWORD"
+	if opts.TrustStoreType == "java_pkcs12" {
+		fallbackEnv = "PKCS12_PASSWORD"
+	}
+	password := ResolveStorePassword(opts.StorePasswordRef, opts.StorePassword, fallbackEnv)
+	alias := KeytoolAlias(opts.AssignmentID, opts.Alias)
+
+	if opts.MaterialType == "server_identity" {
+		return i.installServerIdentity(opts, keystore, alias, password)
+	}
+
+	return i.installTrustAnchor(opts, keystore, alias, password)
+}
+
+func (i *Installer) installServerIdentity(
+	opts installer.InstallOptions,
+	keystore, alias, password string,
+) (string, error) {
+	if strings.TrimSpace(opts.PrivateKeyPem) == "" {
+		return "", fmt.Errorf("private key is required for server_identity")
+	}
+	if err := installer.ValidateKeyMatchesCert(opts.ChainPem, opts.PrivateKeyPem); err != nil {
+		return "", err
+	}
+
+	output, err := ExportPKCS12FromPEM(
+		opts.ChainPem,
+		opts.PrivateKeyPem,
+		keystore,
+		alias,
+		password,
+	)
+	logLines := []string{SanitizeInstallerLog(strings.TrimSpace(output))}
+	if err != nil {
+		return strings.Join(logLines, "\n"), err
+	}
+	logLines = append(logLines, fmt.Sprintf("wrote PKCS#12 identity to %s", keystore))
+
+	if reloadLog, reloadErr := runReloadCommand(opts.ReloadCommand); reloadErr != nil {
+		logLines = append(logLines, reloadLog)
+		return SanitizeInstallerLog(strings.Join(logLines, "\n")), installer.NewCodedError(
+			"ERR_RELOAD_FAILED",
+			fmt.Sprintf("reload command failed: %v", reloadErr),
+		)
+	} else if reloadLog != "" {
+		logLines = append(logLines, reloadLog)
+	}
+
+	if strings.TrimSpace(opts.VerifyEndpoint) != "" {
+		if err := verifyAfterInstall(keystore, alias, password); err != nil {
+			logLines = append(logLines, err.Error())
+			return SanitizeInstallerLog(strings.Join(logLines, "\n")), err
+		}
+	}
+
+	return SanitizeInstallerLog(strings.Join(logLines, "\n")), nil
+}
+
+func (i *Installer) installTrustAnchor(
+	opts installer.InstallOptions,
+	keystore, alias, password string,
+) (string, error) {
 	keytool, err := exec.LookPath("keytool")
 	if err != nil {
 		return "", fmt.Errorf("keytool not found on PATH")
 	}
 
-	alias := installer.DefaultAlias(opts.AssignmentID, opts.Alias)
-	password := resolveStorePassword(opts.StorePassword)
+	if existingThumbprint, listErr := listAliasThumbprint(keytool, alias, keystore, password); listErr == nil {
+		if existingThumbprint != "" &&
+			existingThumbprint == normalizeKeytoolFingerprint(opts.Thumbprint) &&
+			opts.Thumbprint != "" {
+			return SanitizeInstallerLog(
+				fmt.Sprintf("idempotent: thumbprint unchanged for alias %s", alias),
+			), nil
+		}
+	}
 
 	tmp, err := os.CreateTemp("", "compliwise-cert-*.pem")
 	if err != nil {
@@ -48,26 +127,44 @@ func (i *Installer) Install(_ context.Context, opts installer.InstallOptions) (s
 	}
 
 	var logLines []string
-	if deleteOutput, deleteErr := runKeytoolDelete(keytool, alias, keystore, password); deleteErr == nil {
-		logLines = append(logLines, strings.TrimSpace(deleteOutput))
+	if deleteOutput, deleteErr := runKeytoolArgs(
+		DeleteAliasArgs(keytool, alias, keystore, password),
+	); deleteErr == nil {
+		if trimmed := strings.TrimSpace(deleteOutput); trimmed != "" {
+			logLines = append(logLines, trimmed)
+		}
 	}
 
-	importCmd := exec.Command(
-		keytool,
-		"-importcert",
-		"-noprompt",
-		"-alias", alias,
-		"-file", tmpPath,
-		"-keystore", keystore,
-		"-storepass", password,
+	importOutput, importErr := runKeytoolArgs(
+		ImportCertArgs(keytool, alias, tmpPath, keystore, password),
 	)
-	output, err := importCmd.CombinedOutput()
-	logLines = append(logLines, strings.TrimSpace(string(output)))
-	if err != nil {
-		return strings.Join(logLines, "\n"), fmt.Errorf("keytool importcert: %w", err)
+	logLines = append(logLines, strings.TrimSpace(importOutput))
+	if importErr != nil {
+		return SanitizeInstallerLog(strings.Join(logLines, "\n")), fmt.Errorf(
+			"keytool importcert: %w",
+			importErr,
+		)
+	}
+	logLines = append(logLines, "keytool importcert: done")
+
+	if reloadLog, reloadErr := runReloadCommand(opts.ReloadCommand); reloadErr != nil {
+		logLines = append(logLines, reloadLog)
+		return SanitizeInstallerLog(strings.Join(logLines, "\n")), installer.NewCodedError(
+			"ERR_RELOAD_FAILED",
+			fmt.Sprintf("reload command failed: %v", reloadErr),
+		)
+	} else if reloadLog != "" {
+		logLines = append(logLines, reloadLog)
 	}
 
-	return "keytool importcert: done\n" + strings.Join(logLines, "\n"), nil
+	if strings.TrimSpace(opts.VerifyEndpoint) != "" {
+		if err := verifyAfterInstall(keystore, alias, password); err != nil {
+			logLines = append(logLines, err.Error())
+			return SanitizeInstallerLog(strings.Join(logLines, "\n")), err
+		}
+	}
+
+	return SanitizeInstallerLog(strings.Join(logLines, "\n")), nil
 }
 
 func (i *Installer) Remove(_ context.Context, opts installer.RemoveOptions) (string, error) {
@@ -77,46 +174,62 @@ func (i *Installer) Remove(_ context.Context, opts installer.RemoveOptions) (str
 		return "", fmt.Errorf("missing keystore path in install record")
 	}
 
+	if opts.TrustStoreType == "java_pkcs12" && strings.TrimSpace(record.KeyPath) != "" {
+		if err := os.Remove(keystore); err != nil && !os.IsNotExist(err) {
+			return "", fmt.Errorf("remove pkcs12 file: %w", err)
+		}
+		return SanitizeInstallerLog(fmt.Sprintf("removed PKCS#12 file %s", keystore)), nil
+	}
+
 	keytool, err := exec.LookPath("keytool")
 	if err != nil {
 		return "", fmt.Errorf("keytool not found on PATH")
 	}
 
-	alias := installer.DefaultAlias(record.AssignmentID, record.Alias)
-	password := resolveStorePassword("")
+	alias := strings.TrimSpace(record.Alias)
+	if alias == "" {
+		alias = KeytoolAlias(record.AssignmentID, "")
+	}
+	password := ResolveStorePassword("", "", "JAVA_CACERTS_PASSWORD")
 
-	output, err := runKeytoolDelete(keytool, alias, keystore, password)
+	output, err := runKeytoolArgs(DeleteAliasArgs(keytool, alias, keystore, password))
 	if err != nil {
-		return strings.TrimSpace(output), err
+		return SanitizeInstallerLog(strings.TrimSpace(output)), err
 	}
 
-	return "keytool delete: done\n" + strings.TrimSpace(output), nil
-}
-
-func runKeytoolDelete(keytool, alias, keystore, password string) (string, error) {
-	cmd := exec.Command(
-		keytool,
-		"-delete",
-		"-alias", alias,
-		"-keystore", keystore,
-		"-storepass", password,
-	)
-	output, err := cmd.CombinedOutput()
-	return string(output), err
-}
-
-func resolveStorePassword(configured string) string {
-	if trimmed := strings.TrimSpace(configured); trimmed != "" {
-		return trimmed
-	}
-	if value := strings.TrimSpace(os.Getenv("JAVA_CACERTS_PASSWORD")); value != "" {
-		return value
-	}
-	return "changeit"
+	return SanitizeInstallerLog("keytool delete: done\n" + strings.TrimSpace(output)), nil
 }
 
 // RecordPaths returns install metadata for state persistence.
 func RecordPaths(opts installer.InstallOptions) (certPath string, trustStorePath string) {
-	return filepath.Join(strings.TrimSpace(opts.TrustStorePath), installer.DefaultAlias(opts.AssignmentID, opts.Alias)),
-		strings.TrimSpace(opts.TrustStorePath)
+	keystore, err := ResolveKeystorePath(
+		opts.TrustStoreType,
+		opts.TrustStorePath,
+		opts.JavaHome,
+	)
+	if err != nil {
+		keystore = strings.TrimSpace(opts.TrustStorePath)
+	}
+	alias := KeytoolAlias(opts.AssignmentID, opts.Alias)
+	if opts.MaterialType == "server_identity" {
+		return keystore, keystore
+	}
+	return keystore + "#" + alias, keystore
+}
+
+func verifyAfterInstall(keystore, alias, password string) error {
+	keytool, err := exec.LookPath("keytool")
+	if err != nil {
+		return installer.NewCodedError("ERR_VERIFY_FAILED", "keytool not found for verification")
+	}
+	return VerifyKeystoreAlias(keytool, alias, keystore, password)
+}
+
+func runReloadCommand(command []string) (string, error) {
+	if len(command) == 0 {
+		return "", nil
+	}
+	cmd := exec.Command(command[0], command[1:]...)
+	output, err := cmd.CombinedOutput()
+	return strings.TrimSpace(string(output)), err
 }

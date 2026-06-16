@@ -21,8 +21,10 @@ type AssignmentConfig struct {
 	RemoveOnRevoke   *bool    `json:"removeOnRevoke,omitempty"`
 	VerifyEndpoint   string   `json:"verifyEndpoint,omitempty"`
 	VerifyServerName string   `json:"verifyServerName,omitempty"`
-	TrustStorePath   string   `json:"trustStorePath,omitempty"`
-	ReloadCommand    []string `json:"reloadCommand,omitempty"`
+	TrustStorePath    string   `json:"trustStorePath,omitempty"`
+	StorePasswordRef  string   `json:"storePasswordRef,omitempty"`
+	JavaHome          string   `json:"javaHome,omitempty"`
+	ReloadCommand     []string `json:"reloadCommand,omitempty"`
 	CertFileName     string   `json:"certFileName,omitempty"`
 	KeyFileName      string   `json:"keyFileName,omitempty"`
 	KeyPermissionMode string  `json:"keyPermissionMode,omitempty"`
