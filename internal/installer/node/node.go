@@ -11,8 +11,6 @@ import (
 	"github.com/bluewave-labs/capture/internal/installer"
 )
 
-const envKey = "NODE_EXTRA_CA_CERTS"
-
 // Installer implements node_extra_ca_certs for trust anchors.
 type Installer struct{}
 
@@ -21,36 +19,35 @@ func (i *Installer) Supports(materialType, trustStoreType string) bool {
 }
 
 func (i *Installer) Install(_ context.Context, opts installer.InstallOptions) (string, error) {
-	basePath := strings.TrimSpace(opts.TrustStorePath)
-	if basePath == "" {
-		return "", fmt.Errorf("trustStorePath is required for node_extra_ca_certs")
+	if _, err := installer.ThumbprintFromPEM(opts.ChainPem); err != nil {
+		return "", installer.NewCodedError("ERR_INVALID_PEM", "malformed certificate PEM")
 	}
 
-	if err := installer.ValidatePathWithinBase(basePath, basePath); err != nil {
+	bundlePath, err := BundlePath(opts.TrustStorePath, opts.AssignmentID, opts.Alias)
+	if err != nil {
 		return "", err
 	}
 
-	bundlePath := filepath.Join(basePath, fmt.Sprintf("compliwise-%s.pem", opts.AssignmentID))
-
-	if existingThumbprint, err := fileThumbprint(bundlePath); err == nil &&
+	if existingThumbprint, readErr := fileThumbprint(bundlePath); readErr == nil &&
 		existingThumbprint == strings.TrimSpace(opts.Thumbprint) &&
 		opts.Thumbprint != "" {
 		return "idempotent: thumbprint unchanged at " + bundlePath, nil
 	}
 
-	if err := os.MkdirAll(basePath, 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(bundlePath), 0o755); err != nil {
 		return "", fmt.Errorf("create bundle directory: %w", err)
 	}
 
-	if err := os.WriteFile(bundlePath, []byte(strings.TrimSpace(opts.ChainPem)+"\n"), 0o644); err != nil {
-		return "", fmt.Errorf("write bundle file: %w", err)
+	if err := installer.AtomicWriteFile(bundlePath, opts.ChainPem, 0o644); err != nil {
+		return "", err
 	}
 
 	var logLines []string
 	logLines = append(logLines, fmt.Sprintf("wrote %s", bundlePath))
+	logLines = appendOpensslCaLog(logLines, opts)
 
 	if envPath := strings.TrimSpace(opts.EnvFilePath); envPath != "" {
-		if err := upsertEnvLine(envPath, envKey, bundlePath); err != nil {
+		if err := upsertEnvLine(envPath, nodeExtraCAEnvKey, bundlePath); err != nil {
 			return strings.Join(logLines, "\n"), err
 		}
 		logLines = append(logLines, fmt.Sprintf("updated %s", envPath))
@@ -65,6 +62,19 @@ func (i *Installer) Install(_ context.Context, opts installer.InstallOptions) (s
 		if reloadErr != nil {
 			return strings.Join(logLines, "\n"), reloadErr
 		}
+	}
+
+	if endpoint := strings.TrimSpace(opts.VerifyEndpoint); endpoint != "" {
+		if verifyErr := VerifyHTTPS(endpoint); verifyErr != nil {
+			return strings.Join(logLines, "\n"), verifyErr
+		}
+		logLines = append(logLines, "node HTTPS verification succeeded")
+	}
+
+	if opts.Metadata != nil {
+		opts.Metadata.CertPath = bundlePath
+		opts.Metadata.TrustStorePath = ResolveTrustStorePath(opts.TrustStorePath)
+		opts.Metadata.EnvFilePath = strings.TrimSpace(opts.EnvFilePath)
 	}
 
 	return strings.Join(logLines, "\n"), nil
@@ -88,13 +98,32 @@ func (i *Installer) Remove(_ context.Context, opts installer.RemoveOptions) (str
 	}
 
 	if envPath := strings.TrimSpace(record.EnvFilePath); envPath != "" {
-		if err := removeEnvLine(envPath, envKey); err != nil {
+		if err := removeEnvLine(envPath, nodeExtraCAEnvKey); err != nil {
 			return strings.Join(logLines, "\n"), err
 		}
-		logLines = append(logLines, fmt.Sprintf("cleared %s from %s", envKey, envPath))
+		logLines = append(logLines, fmt.Sprintf("cleared %s from %s", nodeExtraCAEnvKey, envPath))
 	}
 
 	return strings.Join(logLines, "\n"), nil
+}
+
+func appendOpensslCaLog(lines []string, opts installer.InstallOptions) []string {
+	if !shouldDocumentOpensslCA(opts) {
+		return lines
+	}
+	return append(lines, "systemd: add ExecStart flag: node --use-openssl-ca")
+}
+
+func shouldDocumentOpensslCA(opts installer.InstallOptions) bool {
+	if opts.UseOpensslCa {
+		return true
+	}
+	for _, flag := range opts.NodeFlags {
+		if strings.TrimSpace(flag) == "--use-openssl-ca" {
+			return true
+		}
+	}
+	return false
 }
 
 func fileThumbprint(path string) (string, error) {
@@ -103,67 +132,6 @@ func fileThumbprint(path string) (string, error) {
 		return "", err
 	}
 	return installer.ThumbprintFromPEM(string(data))
-}
-
-func upsertEnvLine(path, key, value string) error {
-	lines := []string{}
-	if data, err := os.ReadFile(path); err == nil {
-		for _, line := range strings.Split(string(data), "\n") {
-			trimmed := strings.TrimSpace(line)
-			if trimmed == "" || strings.HasPrefix(trimmed, "#") {
-				lines = append(lines, line)
-				continue
-			}
-			entryKey, _, ok := strings.Cut(trimmed, "=")
-			if ok && strings.TrimSpace(entryKey) == key {
-				continue
-			}
-			lines = append(lines, line)
-		}
-	}
-
-	lines = append(lines, fmt.Sprintf("%s=%s", key, value))
-	content := strings.Join(lines, "\n")
-	if !strings.HasSuffix(content, "\n") {
-		content += "\n"
-	}
-
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return fmt.Errorf("create env directory: %w", err)
-	}
-	return os.WriteFile(path, []byte(content), 0o644)
-}
-
-func removeEnvLine(path, key string) error {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil
-		}
-		return err
-	}
-
-	lines := []string{}
-	for _, line := range strings.Split(string(data), "\n") {
-		trimmed := strings.TrimSpace(line)
-		if trimmed == "" {
-			continue
-		}
-		entryKey, _, ok := strings.Cut(trimmed, "=")
-		if ok && strings.TrimSpace(entryKey) == key {
-			continue
-		}
-		lines = append(lines, line)
-	}
-
-	content := strings.Join(lines, "\n")
-	if content == "" {
-		return os.Remove(path)
-	}
-	if !strings.HasSuffix(content, "\n") {
-		content += "\n"
-	}
-	return os.WriteFile(path, []byte(content), 0o644)
 }
 
 func runReloadCommand(command []string) (string, error) {

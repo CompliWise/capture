@@ -30,6 +30,8 @@ type AssignmentConfig struct {
 	KeyFileName      string   `json:"keyFileName,omitempty"`
 	KeyPermissionMode string  `json:"keyPermissionMode,omitempty"`
 	EnvFilePath      string   `json:"envFilePath,omitempty"`
+	UseOpensslCa     bool     `json:"useOpensslCa,omitempty"`
+	NodeFlags        []string `json:"nodeFlags,omitempty"`
 	StoreLocation    string   `json:"storeLocation,omitempty"`
 	StoreName        string   `json:"storeName,omitempty"`
 	IIS              *IISAssignmentConfig `json:"iis,omitempty"`

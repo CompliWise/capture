@@ -13,6 +13,7 @@ import (
 	"github.com/bluewave-labs/capture/internal/installer"
 	"github.com/bluewave-labs/capture/internal/installer/java"
 	"github.com/bluewave-labs/capture/internal/installer/linux"
+	"github.com/bluewave-labs/capture/internal/installer/node"
 	"github.com/bluewave-labs/capture/internal/installer/python"
 	installerstate "github.com/bluewave-labs/capture/internal/installer/state"
 )
@@ -165,6 +166,8 @@ func processAssignment(
 		StoreName:         assignment.Config.StoreName,
 		VerifyEndpoint:    assignment.Config.VerifyEndpoint,
 		VerifyServerName:  assignment.Config.VerifyServerName,
+		UseOpensslCa:      assignment.Config.UseOpensslCa,
+		NodeFlags:         assignment.Config.NodeFlags,
 		IIS:               mapIISConfig(assignment.Config.IIS),
 		Metadata:          &installer.InstallRecord{},
 	}
@@ -274,8 +277,10 @@ func buildInstallRecord(
 			record.CertPath = path
 		}
 	case "node_extra_ca_certs":
-		base := strings.TrimSpace(opts.TrustStorePath)
-		record.CertPath = filepath.Join(base, fmt.Sprintf("compliwise-%s.pem", assignment.AssignmentID))
+		if path, err := node.BundlePath(opts.TrustStorePath, assignment.AssignmentID, opts.Alias); err == nil {
+			record.CertPath = path
+			record.TrustStorePath = node.ResolveTrustStorePath(opts.TrustStorePath)
+		}
 		record.EnvFilePath = strings.TrimSpace(opts.EnvFilePath)
 	case "pem_directory":
 		storePath := strings.TrimSpace(opts.TrustStorePath)

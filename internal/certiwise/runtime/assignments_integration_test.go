@@ -147,6 +147,47 @@ func TestPythonInstallerRegistered(t *testing.T) {
 	}
 }
 
+func TestNodeExtraCACertsRegistrySupportsTrustAnchor(t *testing.T) {
+	inst, ok := defaultInstallRegistry.Lookup("node_extra_ca_certs")
+	if !ok {
+		t.Fatal("expected node installer to be registered")
+	}
+	if !inst.Supports("trust_anchor", "node_extra_ca_certs") {
+		t.Fatal("node installer should support trust_anchor")
+	}
+	if inst.Supports("server_identity", "node_extra_ca_certs") {
+		t.Fatal("node installer should not support server_identity")
+	}
+}
+
+func TestBuildInstallRecordNodePaths(t *testing.T) {
+	assignment := certiwise.AssignmentPullItem{
+		AssignmentID:   "assign-node",
+		TrustStoreType: "node_extra_ca_certs",
+		Config: certiwise.AssignmentConfig{
+			TrustStorePath: "/etc/compliwise/ca-bundles",
+			Alias:          "webhook-dispatcher",
+			EnvFilePath:    "/etc/compliwise/env.d/node_extra_ca",
+		},
+	}
+	record := buildInstallRecord(
+		assignment,
+		"thumb",
+		installer.InstallOptions{
+			TrustStorePath: "/etc/compliwise/ca-bundles",
+			Alias:          "webhook-dispatcher",
+			EnvFilePath:    "/etc/compliwise/env.d/node_extra_ca",
+		},
+	)
+	expected := "/etc/compliwise/ca-bundles/compliwise-webhook-dispatcher.pem"
+	if record.CertPath != expected {
+		t.Fatalf("unexpected cert path %q", record.CertPath)
+	}
+	if record.EnvFilePath != "/etc/compliwise/env.d/node_extra_ca" {
+		t.Fatalf("unexpected env file path %q", record.EnvFilePath)
+	}
+}
+
 func TestBuildInstallRecordPythonPaths(t *testing.T) {
 	assignment := certiwise.AssignmentPullItem{
 		AssignmentID:   "assign-python",
