@@ -15,6 +15,7 @@ import (
 	"github.com/bluewave-labs/capture/internal/installer/dotnet"
 	"github.com/bluewave-labs/capture/internal/installer/java"
 	"github.com/bluewave-labs/capture/internal/installer/linux"
+	"github.com/bluewave-labs/capture/internal/installer/macos"
 	"github.com/bluewave-labs/capture/internal/installer/node"
 	"github.com/bluewave-labs/capture/internal/installer/python"
 	installerstate "github.com/bluewave-labs/capture/internal/installer/state"
@@ -171,6 +172,7 @@ func processAssignment(
 		UseOpensslCa:      assignment.Config.UseOpensslCa,
 		NodeFlags:         assignment.Config.NodeFlags,
 		PreferOsStore:     assignment.Config.PreferOsStore,
+		KeychainPath:      assignment.Config.KeychainPath,
 		IIS:               mapIISConfig(assignment.Config.IIS),
 		Metadata:          &installer.InstallRecord{},
 	}
@@ -326,6 +328,13 @@ func buildInstallRecord(
 			}
 			record.KeyPath = filepath.Join(storePath, keyName)
 		}
+	case "macos_keychain_system":
+		if path, err := macos.ResolveKeychainPath(opts.KeychainPath); err == nil {
+			record.KeychainPath = path
+		} else if path, err := macos.ResolveKeychainPath(assignment.Config.KeychainPath); err == nil {
+			record.KeychainPath = path
+		}
+		record.Alias = installer.DefaultAlias(assignment.AssignmentID, assignment.Config.Alias)
 	case "windows_cert_store":
 		storeName := strings.TrimSpace(assignment.Config.StoreName)
 		if storeName == "" {
@@ -394,6 +403,12 @@ func mergeInstallMetadata(base, runtime installer.InstallRecord) installer.Insta
 	}
 	if strings.TrimSpace(runtime.TrustStorePath) != "" {
 		base.TrustStorePath = runtime.TrustStorePath
+	}
+	if strings.TrimSpace(runtime.KeychainPath) != "" {
+		base.KeychainPath = runtime.KeychainPath
+	}
+	if strings.TrimSpace(runtime.CertCommonName) != "" {
+		base.CertCommonName = runtime.CertCommonName
 	}
 	return base
 }

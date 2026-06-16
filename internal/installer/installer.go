@@ -12,7 +12,9 @@ type InstallRecord struct {
 	Alias          string `json:"alias,omitempty"`
 	TrustStorePath string `json:"trustStorePath,omitempty"`
 	EnvFilePath    string `json:"envFilePath,omitempty"`
-	PreferOsStore             bool   `json:"preferOsStore,omitempty"`
+	PreferOsStore     bool   `json:"preferOsStore,omitempty"`
+	KeychainPath      string `json:"keychainPath,omitempty"`
+	CertCommonName    string `json:"certCommonName,omitempty"`
 	StoreName                 string `json:"storeName,omitempty"`
 	BindingSnapshotThumbprint string `json:"bindingSnapshotThumbprint,omitempty"`
 	IISSiteName               string `json:"iisSiteName,omitempty"`
@@ -47,6 +49,7 @@ type InstallOptions struct {
 	KeyFileName       string
 	KeyPermissionMode string
 	TrustStorePath    string
+	KeychainPath      string
 	Alias             string
 	ReloadCommand     []string
 	StorePassword     string

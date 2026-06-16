@@ -160,6 +160,44 @@ func TestDotnetInstallerRegistered(t *testing.T) {
 	}
 }
 
+func TestMacosInstallerRegistered(t *testing.T) {
+	inst, ok := defaultInstallRegistry.Lookup("macos_keychain_system")
+	if !ok {
+		t.Fatal("expected macos installer to be registered")
+	}
+	if !inst.Supports("trust_anchor", "macos_keychain_system") {
+		t.Fatal("macos installer should support trust_anchor")
+	}
+	if inst.Supports("server_identity", "macos_keychain_system") {
+		t.Fatal("macos installer should not support server_identity")
+	}
+}
+
+func TestBuildInstallRecordMacosKeychainPaths(t *testing.T) {
+	assignment := certiwise.AssignmentPullItem{
+		AssignmentID:   "assign-macos",
+		TrustStoreType: "macos_keychain_system",
+		Config: certiwise.AssignmentConfig{
+			KeychainPath: "/Library/Keychains/System.keychain",
+			Alias:        "swift-gateway",
+		},
+	}
+	record := buildInstallRecord(
+		assignment,
+		"thumb",
+		installer.InstallOptions{
+			KeychainPath: "/Library/Keychains/System.keychain",
+			Alias:        "swift-gateway",
+		},
+	)
+	if record.KeychainPath != "/Library/Keychains/System.keychain" {
+		t.Fatalf("unexpected keychain path %q", record.KeychainPath)
+	}
+	if record.Alias != "swift-gateway" {
+		t.Fatalf("unexpected alias %q", record.Alias)
+	}
+}
+
 func TestBuildInstallRecordDotnetPaths(t *testing.T) {
 	assignment := certiwise.AssignmentPullItem{
 		AssignmentID:   "assign-dotnet",

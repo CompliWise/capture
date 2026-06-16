@@ -5,6 +5,7 @@ import (
 	"github.com/bluewave-labs/capture/internal/installer/dotnet"
 	"github.com/bluewave-labs/capture/internal/installer/java"
 	"github.com/bluewave-labs/capture/internal/installer/linux"
+	"github.com/bluewave-labs/capture/internal/installer/macos"
 	"github.com/bluewave-labs/capture/internal/installer/node"
 	"github.com/bluewave-labs/capture/internal/installer/pem"
 	"github.com/bluewave-labs/capture/internal/installer/python"
@@ -20,5 +21,6 @@ func newDefaultInstallRegistry() *installer.Registry {
 	registry.Register(&dotnet.Installer{})
 	registry.Register(&pem.Installer{})
 	registry.Register(&wininstaller.Installer{})
+	registry.Register(&macos.Installer{})
 	return registry
 }

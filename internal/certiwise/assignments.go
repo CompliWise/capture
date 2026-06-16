@@ -22,6 +22,7 @@ type AssignmentConfig struct {
 	VerifyEndpoint   string   `json:"verifyEndpoint,omitempty"`
 	VerifyServerName string   `json:"verifyServerName,omitempty"`
 	TrustStorePath    string   `json:"trustStorePath,omitempty"`
+	KeychainPath      string   `json:"keychainPath,omitempty"`
 	StorePasswordRef  string   `json:"storePasswordRef,omitempty"`
 	JavaHome          string   `json:"javaHome,omitempty"`
 	PythonVenvPath    string   `json:"pythonVenvPath,omitempty"`

@@ -29,6 +29,7 @@ func (r *Registry) Register(inst Installer) {
 		"dotnet_root_store",
 		"pem_directory",
 		"windows_cert_store",
+		"macos_keychain_system",
 	} {
 		if inst.Supports("trust_anchor", trustStoreType) {
 			r.installers[trustStoreType] = inst
