@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strconv"
 	"time"
 
 	"github.com/bluewave-labs/capture/internal/certiwise"
@@ -12,7 +11,6 @@ import (
 	"github.com/bluewave-labs/capture/internal/certiwise/connectivity"
 	"github.com/bluewave-labs/capture/internal/certiwise/discovery"
 	"github.com/bluewave-labs/capture/internal/certiwise/probe"
-	"github.com/bluewave-labs/capture/internal/certiwise/store"
 	"github.com/bluewave-labs/capture/internal/certiwise/synthetic"
 )
 
@@ -45,7 +43,7 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 		return fmt.Errorf("create API client: %w", err)
 	}
 
-	hostname, platform := certiwise.HostIdentity()
+	hostMetadata := certiwise.CollectHostMetadata()
 
 	if cfg.AgentToken == "" {
 		if cfg.EnrollmentCode == "" {
@@ -54,9 +52,14 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 
 		enrollResp, err := client.Enroll(certiwise.EnrollRequest{
 			EnrollmentCode: cfg.EnrollmentCode,
-			Hostname:       hostname,
-			Platform:       platform,
+			Hostname:       hostMetadata.Hostname,
+			Platform:       hostMetadata.Platform,
 			AgentVersion:   agentVersion,
+			OsPrettyName:   hostMetadata.OsPrettyName,
+			OsFamily:       hostMetadata.OsFamily,
+			OsPlatform:     hostMetadata.OsPlatform,
+			OsVersion:      hostMetadata.OsVersion,
+			KernelVersion:  hostMetadata.KernelVersion,
 		})
 		if err != nil {
 			return fmt.Errorf("enroll agent: %w", err)
@@ -82,7 +85,7 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 
 	hbState := newHeartbeatState()
 
-	if version, err := sendHeartbeat(client, agentVersion, hostname, platform, hbState); err != nil {
+	if version, err := sendHeartbeat(client, agentVersion, hbState); err != nil {
 		log.Printf("certiwise: initial heartbeat failed: %v", err)
 	} else {
 		agentVersion = version
@@ -111,10 +114,24 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 		return probeScheduler.RunManual(ctx, client, cfg, pull)
 	})
 
+	remoteConfig := &remoteConfigState{}
+	heartbeatTicker := newResettableTicker(cfg.HeartbeatInterval)
+	defer heartbeatTicker.Stop()
+
+	pollTicker := newResettableTicker(cfg.PollInterval)
+	defer pollTicker.Stop()
+
 	pull, succeeded, err := syncAssignments(ctx, client, tracker)
 	if err != nil {
 		log.Printf("certiwise: initial assignment sync failed: %v", err)
 	} else if pull != nil {
+		pollChanged, heartbeatChanged := remoteConfig.apply(cfg, pull)
+		if pollChanged {
+			pollTicker.Reset(cfg.PollInterval)
+		}
+		if heartbeatChanged {
+			heartbeatTicker.Reset(cfg.HeartbeatInterval)
+		}
 		if err := connectivityScheduler.RunIfRequested(ctx, client, cfg, pull); err != nil {
 			log.Printf("certiwise: connectivity test failed: %v", err)
 		}
@@ -135,12 +152,6 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 			}
 		}
 	}
-
-	heartbeatTicker := time.NewTicker(cfg.HeartbeatInterval)
-	defer heartbeatTicker.Stop()
-
-	pollTicker := time.NewTicker(cfg.PollInterval)
-	defer pollTicker.Stop()
 
 	var discoveryTicker *time.Ticker
 	var discoveryC <-chan time.Time
@@ -171,7 +182,7 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-heartbeatTicker.C:
-			if version, err := sendHeartbeat(client, agentVersion, hostname, platform, hbState); err != nil {
+			if version, err := sendHeartbeat(client, agentVersion, hbState); err != nil {
 				log.Printf("certiwise: heartbeat failed: %v", err)
 			} else {
 				agentVersion = version
@@ -184,6 +195,13 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 			}
 			if pull == nil {
 				continue
+			}
+			pollChanged, heartbeatChanged := remoteConfig.apply(cfg, pull)
+			if pollChanged {
+				pollTicker.Reset(cfg.PollInterval)
+			}
+			if heartbeatChanged {
+				heartbeatTicker.Reset(cfg.HeartbeatInterval)
 			}
 			if err := connectivityScheduler.RunIfRequested(ctx, client, cfg, pull); err != nil {
 				log.Printf("certiwise: connectivity test failed: %v", err)
@@ -239,11 +257,17 @@ func run(ctx context.Context, cfg *cwconfig.Config, agentVersion string) error {
 	}
 }
 
-func sendHeartbeat(client *certiwise.Client, agentVersion, hostname, platform string, state *heartbeatState) (string, error) {
+func sendHeartbeat(client *certiwise.Client, agentVersion string, state *heartbeatState) (string, error) {
+	hostMetadata := certiwise.CollectHostMetadata()
 	req := certiwise.HeartbeatRequest{
-		AgentVersion: agentVersion,
-		Hostname:     hostname,
-		Platform:     platform,
+		AgentVersion:  agentVersion,
+		Hostname:      hostMetadata.Hostname,
+		Platform:      hostMetadata.Platform,
+		OsPrettyName:  hostMetadata.OsPrettyName,
+		OsFamily:      hostMetadata.OsFamily,
+		OsPlatform:    hostMetadata.OsPlatform,
+		OsVersion:     hostMetadata.OsVersion,
+		KernelVersion: hostMetadata.KernelVersion,
 	}
 	if state != nil && state.upgradeStatus != "" {
 		req.UpgradeStatus = state.upgradeStatus
@@ -255,20 +279,9 @@ func sendHeartbeat(client *certiwise.Client, agentVersion, hostname, platform st
 	}
 
 	if state != nil && resp != nil && resp.Upgrade != nil {
-		agentVersion = maybeRunUpgrade(context.Background(), client, platform, agentVersion, state, resp)
+		agentVersion = maybeRunUpgrade(context.Background(), client, hostMetadata.Platform, agentVersion, state, resp)
 	}
 
 	log.Printf("certiwise: heartbeat status=%s lastHeartbeatAt=%s", resp.Status, resp.LastHeartbeatAt)
 	return agentVersion, nil
-}
-
-func persistAgentEnv(cfg *cwconfig.Config) error {
-	return store.WriteEnvFile(cfg.AgentEnvPath, map[string]string{
-		"COMPLIWISE_API_URL":            cfg.APIURL,
-		"COMPLIWISE_ORG_ID":             cfg.OrgID,
-		"COMPLIWISE_AGENT_ID":           cfg.AgentID,
-		"COMPLIWISE_AGENT_TOKEN":        cfg.AgentToken,
-		"COMPLIWISE_POLL_INTERVAL":      strconv.Itoa(int(cfg.PollInterval.Seconds())),
-		"COMPLIWISE_HEARTBEAT_INTERVAL": strconv.Itoa(int(cfg.HeartbeatInterval.Seconds())),
-	})
 }

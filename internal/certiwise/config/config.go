@@ -76,6 +76,8 @@ type Config struct {
 	SyntheticSyncInterval time.Duration
 	SyntheticMaxWorkers int
 	SyntheticUserAgent string
+	TelemetryBatchSize int
+	TelemetryFlushSeconds int
 }
 
 // Load reads CompliWise settings from the persisted env file and process environment.

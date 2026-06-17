@@ -55,6 +55,8 @@ func WriteEnvFile(path string, values map[string]string) error {
 		"COMPLIWISE_AGENT_TOKEN",
 		"COMPLIWISE_POLL_INTERVAL",
 		"COMPLIWISE_HEARTBEAT_INTERVAL",
+		"COMPLIWISE_TELEMETRY_BATCH_SIZE",
+		"COMPLIWISE_TELEMETRY_FLUSH_SECONDS",
 	}
 	for _, key := range keys {
 		value, ok := values[key]

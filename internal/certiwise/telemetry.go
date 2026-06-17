@@ -7,9 +7,11 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 )
 
 const telemetryBatchPath = "/api/v1/agent/telemetry/batch"
+const telemetryBatchTimeout = 120 * time.Second
 
 // TelemetryEvent is one event in a telemetry batch POST.
 type TelemetryEvent struct {
@@ -109,7 +111,10 @@ func (c *Client) PostTelemetryBatch(events []TelemetryEvent) error {
 	}
 	req.Header.Set("Authorization", "Bearer "+c.token)
 
-	resp, err := c.httpClient.Do(req)
+	batchClient := *c.httpClient
+	batchClient.Timeout = telemetryBatchTimeout
+
+	resp, err := batchClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("POST %s: %w", telemetryBatchPath, err)
 	}

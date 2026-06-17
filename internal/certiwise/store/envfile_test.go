@@ -11,10 +11,12 @@ func TestWriteAndReadEnvFile(t *testing.T) {
 	path := filepath.Join(dir, "agent.env")
 
 	err := WriteEnvFile(path, map[string]string{
-		"COMPLIWISE_API_URL":     "http://localhost:4000",
-		"COMPLIWISE_ORG_ID":      "org-1",
-		"COMPLIWISE_AGENT_ID":    "agent-1",
-		"COMPLIWISE_AGENT_TOKEN": "cw_agent_test",
+		"COMPLIWISE_API_URL":                  "http://localhost:4000",
+		"COMPLIWISE_ORG_ID":                   "org-1",
+		"COMPLIWISE_AGENT_ID":                 "agent-1",
+		"COMPLIWISE_AGENT_TOKEN":              "cw_agent_test",
+		"COMPLIWISE_TELEMETRY_BATCH_SIZE":     "25",
+		"COMPLIWISE_TELEMETRY_FLUSH_SECONDS":  "20",
 	})
 	if err != nil {
 		t.Fatalf("WriteEnvFile: %v", err)
@@ -34,5 +36,8 @@ func TestWriteAndReadEnvFile(t *testing.T) {
 	}
 	if values["COMPLIWISE_AGENT_TOKEN"] != "cw_agent_test" {
 		t.Fatalf("unexpected token: %q", values["COMPLIWISE_AGENT_TOKEN"])
+	}
+	if values["COMPLIWISE_TELEMETRY_BATCH_SIZE"] != "25" {
+		t.Fatalf("unexpected telemetry batch: %q", values["COMPLIWISE_TELEMETRY_BATCH_SIZE"])
 	}
 }

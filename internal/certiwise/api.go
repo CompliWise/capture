@@ -24,6 +24,11 @@ type EnrollRequest struct {
 	Platform        string `json:"platform"`
 	AgentVersion    string `json:"agentVersion"`
 	HostFingerprint string `json:"hostFingerprint,omitempty"`
+	OsPrettyName    string `json:"osPrettyName,omitempty"`
+	OsFamily        string `json:"osFamily,omitempty"`
+	OsPlatform      string `json:"osPlatform,omitempty"`
+	OsVersion       string `json:"osVersion,omitempty"`
+	KernelVersion   string `json:"kernelVersion,omitempty"`
 }
 
 // EnrollResponse is returned after a successful enrollment exchange.
@@ -39,6 +44,11 @@ type HeartbeatRequest struct {
 	AgentVersion  string `json:"agentVersion"`
 	Hostname      string `json:"hostname,omitempty"`
 	Platform      string `json:"platform,omitempty"`
+	OsPrettyName  string `json:"osPrettyName,omitempty"`
+	OsFamily      string `json:"osFamily,omitempty"`
+	OsPlatform    string `json:"osPlatform,omitempty"`
+	OsVersion     string `json:"osVersion,omitempty"`
+	KernelVersion string `json:"kernelVersion,omitempty"`
 	UpgradeStatus string `json:"upgradeStatus,omitempty"`
 	LastUpgradeAt string `json:"lastUpgradeAt,omitempty"`
 	UpgradeError  string `json:"upgradeError,omitempty"`

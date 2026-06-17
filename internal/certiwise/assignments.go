@@ -73,10 +73,20 @@ type AssignmentPullItem struct {
 	DeploymentIntent  string             `json:"deploymentIntent,omitempty"`
 }
 
+// AgentPullConfig is remote runtime configuration from GET /agent/assignments.
+type AgentPullConfig struct {
+	PollIntervalSeconds      int  `json:"pollIntervalSeconds"`
+	HeartbeatIntervalSeconds int  `json:"heartbeatIntervalSeconds"`
+	TelemetryBatchSize       int  `json:"telemetryBatchSize,omitempty"`
+	TelemetryFlushSeconds    int  `json:"telemetryFlushSeconds,omitempty"`
+	Enabled                  bool `json:"enabled"`
+}
+
 // AssignmentsPullResponse is the body of GET /agent/assignments.
 type AssignmentsPullResponse struct {
 	Etag                     string               `json:"etag"`
 	ConfigEtag               string               `json:"configEtag"`
+	Config                   AgentPullConfig      `json:"config"`
 	Assignments              []AssignmentPullItem `json:"assignments"`
 	ConnectivityTestRequested bool                `json:"connectivityTestRequested"`
 	DiscoveryScanRequestedAt *string              `json:"discoveryScanRequestedAt"`
