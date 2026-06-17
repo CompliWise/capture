@@ -49,8 +49,9 @@ type ProbeResult struct {
 
 // ValidationOutcome maps probe results to schema validationResult values.
 type ValidationOutcome struct {
-	Result string
-	Errors []string
+	Result        string
+	Errors        []string
+	VerifiedChain []*x509.Certificate
 }
 
 const handshakeErrorThumbprint = "0000000000000000000000000000000000000000000000000000000000000000"

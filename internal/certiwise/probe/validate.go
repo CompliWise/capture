@@ -96,7 +96,11 @@ func ValidatePeerCertificates(
 	}
 
 	if insecure {
-		return ValidationOutcome{Result: validationOK, Errors: []string{}}
+		return ValidationOutcome{
+			Result:        validationOK,
+			Errors:        []string{},
+			VerifiedChain: append([]*x509.Certificate(nil), certs...),
+		}
 	}
 
 	intermediates := x509.NewCertPool()
@@ -117,7 +121,8 @@ func ValidatePeerCertificates(
 		Roots:         roots,
 	}
 
-	if _, err := leaf.Verify(verifyOpts); err != nil {
+	chains, err := leaf.Verify(verifyOpts)
+	if err != nil {
 		var unknownAuth x509.UnknownAuthorityError
 		var hostnameErr x509.HostnameError
 		switch {
@@ -130,7 +135,24 @@ func ValidatePeerCertificates(
 		}
 	}
 
-	return ValidationOutcome{Result: validationOK, Errors: []string{}}
+	return ValidationOutcome{
+		Result:        validationOK,
+		Errors:        []string{},
+		VerifiedChain: longestVerifiedChain(chains, certs),
+	}
+}
+
+func longestVerifiedChain(
+	chains [][]*x509.Certificate,
+	presented []*x509.Certificate,
+) []*x509.Certificate {
+	best := append([]*x509.Certificate(nil), presented...)
+	for _, chain := range chains {
+		if len(chain) > len(best) {
+			best = append([]*x509.Certificate(nil), chain...)
+		}
+	}
+	return best
 }
 
 func truncateError(message string) string {

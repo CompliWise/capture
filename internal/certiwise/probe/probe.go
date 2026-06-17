@@ -2,6 +2,7 @@ package probe
 
 import (
 	"context"
+	"crypto/x509"
 	"time"
 
 	"github.com/bluewave-labs/capture/internal/certiwise"
@@ -52,7 +53,7 @@ func Probe(ctx context.Context, target ProbeTarget, cfg *cwconfig.Config) ProbeR
 		peerAddress = PeerAddressForTarget(target)
 	}
 
-	chain := handshake.ChainSHA256
+	chain := selectChainThumbprints(handshake.ChainSHA256, outcome.VerifiedChain)
 	tlsVersion := handshake.TLSVersion
 	cipherSuite := handshake.CipherSuite
 
@@ -72,4 +73,18 @@ func Probe(ctx context.Context, target ProbeTarget, cfg *cwconfig.Config) ProbeR
 		ValidationErrors:     outcome.Errors,
 		DurationMs:           handshake.DurationMs,
 	}
+}
+
+func selectChainThumbprints(
+	presented []string,
+	verified []*x509.Certificate,
+) []string {
+	verifiedThumbprints := chainThumbprints(verified)
+	if len(verifiedThumbprints) > len(presented) {
+		return verifiedThumbprints
+	}
+	if len(presented) > 0 {
+		return presented
+	}
+	return verifiedThumbprints
 }
