@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	"github.com/bluewave-labs/capture/internal/metric"
+	"github.com/compliwise/capture/internal/metric"
 )
 
 // TestGetUnixTimestamp tests the metric.GetUnixTimestamp function with various timestamp formats.

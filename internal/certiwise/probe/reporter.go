@@ -4,33 +4,38 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
+	"github.com/compliwise/capture/internal/certiwise"
 )
 
-// BuildTlsHandshakeEvent constructs a tls.handshake telemetry event.
-func BuildTlsHandshakeEvent(
+// BuildTLSHandshakeEvent constructs a tls.handshake telemetry event.
+func BuildTLSHandshakeEvent(
 	target ProbeTarget,
 	result ProbeResult,
 	observedAt time.Time,
 ) certiwise.TelemetryEvent {
 	cipherSuite := normalizeCipherSuite(result.CipherSuite)
 	chain := make([]string, len(result.PresentedChainSha256))
+	subjectCns := make([]string, len(result.PresentedChainSubjectCN))
 	for i, thumbprint := range result.PresentedChainSha256 {
 		chain[i] = strings.ToLower(thumbprint)
+	}
+	for i, subjectCn := range result.PresentedChainSubjectCN {
+		subjectCns[i] = strings.TrimSpace(subjectCn)
 	}
 
 	event := certiwise.TelemetryEvent{
 		Type:       "tls.handshake",
 		ObservedAt: observedAt.UTC().Format(time.RFC3339),
-		Payload: certiwise.TlsHandshakePayload{
-			ServerName:           result.ServerName,
-			PeerAddress:          result.PeerAddress,
-			TLSVersion:           result.TLSVersion,
-			CipherSuite:          cipherSuite,
-			PresentedChainSha256: chain,
-			ValidationResult:     result.ValidationResult,
-			ValidationErrors:     result.ValidationErrors,
-			DurationMs:           result.DurationMs,
+		Payload: certiwise.TLSHandshakePayload{
+			ServerName:              result.ServerName,
+			PeerAddress:             result.PeerAddress,
+			TLSVersion:              result.TLSVersion,
+			CipherSuite:             cipherSuite,
+			PresentedChainSha256:    chain,
+			PresentedChainSubjectCN: subjectCns,
+			ValidationResult:        result.ValidationResult,
+			ValidationErrors:        result.ValidationErrors,
+			DurationMs:              result.DurationMs,
 		},
 	}
 
@@ -65,7 +70,7 @@ func PostHandshake(
 	result ProbeResult,
 	licenseLogger *LicenseDeniedLogger,
 ) error {
-	event := BuildTlsHandshakeEvent(target, result, time.Now())
+	event := BuildTLSHandshakeEvent(target, result, time.Now())
 	err := client.PostTelemetryBatch([]certiwise.TelemetryEvent{event})
 	if licenseLogger != nil {
 		licenseLogger.MaybeWarn(err)

@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/bluewave-labs/capture/internal/installer"
-	"github.com/bluewave-labs/capture/internal/installer/linux"
+	"github.com/compliwise/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer/linux"
 )
 
 var verifyRunner = defaultVerifyRunner
@@ -65,7 +65,7 @@ func installPostgreSQL(opts installer.InstallOptions) (string, error) {
 		opts.TrustStoreType,
 		opts.TrustStorePath,
 		opts.CertFileName,
-		opts.DbUser,
+		opts.DBUser,
 	)
 	if err != nil {
 		return "", err
@@ -85,7 +85,7 @@ func installPostgreSQL(opts installer.InstallOptions) (string, error) {
 		return "", err
 	}
 
-	if err := applyPostgresOwnership(targetPath, opts.DbUser); err != nil {
+	if err := applyPostgresOwnership(targetPath, opts.DBUser); err != nil {
 		return "", err
 	}
 
@@ -97,7 +97,7 @@ func installMySQL(opts installer.InstallOptions) (string, error) {
 		opts.TrustStoreType,
 		opts.TrustStorePath,
 		opts.CertFileName,
-		opts.DbUser,
+		opts.DBUser,
 	)
 	if err != nil {
 		return "", err
@@ -125,7 +125,7 @@ func installOracle(opts installer.InstallOptions) (string, error) {
 		opts.TrustStoreType,
 		opts.TrustStorePath,
 		opts.CertFileName,
-		opts.DbUser,
+		opts.DBUser,
 	)
 	if err != nil {
 		return "", err
@@ -157,7 +157,7 @@ func installOracle(opts installer.InstallOptions) (string, error) {
 		return message, fmt.Errorf("orapki wallet add failed: %s", message)
 	}
 
-	var logLines []string
+	logLines := make([]string, 0, 1)
 	logLines = append(logLines, fmt.Sprintf("orapki wallet add %s", walletDir))
 
 	if opts.Metadata != nil {

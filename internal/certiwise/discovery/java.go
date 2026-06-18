@@ -13,15 +13,15 @@ import (
 )
 
 const (
-	defaultJavaMaxJvms     = 5
-	defaultJavaStorePass   = "changeit"
-	javaCacertsTrustType   = "java_cacerts"
+	defaultJavaMaxJvms   = 5
+	defaultJavaStorePass = "changeit"
+	javaCacertsTrustType = "java_cacerts"
 )
 
 var (
-	keytoolAliasPattern    = regexp.MustCompile(`(?m)^Alias name:\s*(.+)$`)
-	keytoolSHA256Pattern   = regexp.MustCompile(`(?m)^\s*SHA256:\s*([0-9A-Fa-f:\s]+)$`)
-	keytoolUntilPattern    = regexp.MustCompile(`(?m)Valid from:.* until:\s*(.+)$`)
+	keytoolAliasPattern  = regexp.MustCompile(`(?m)^Alias name:\s*(.+)$`)
+	keytoolSHA256Pattern = regexp.MustCompile(`(?m)^\s*SHA256:\s*([0-9A-Fa-f:\s]+)$`)
+	keytoolUntilPattern  = regexp.MustCompile(`(?m)Valid from:.* until:\s*(.+)$`)
 )
 
 // ScanJavaCacerts enumerates trusted certificates from JVM cacerts keystores.

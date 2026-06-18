@@ -1,9 +1,10 @@
 package installer
 
 import (
+	"errors"
 	"testing"
 
-	"github.com/bluewave-labs/capture/internal/installer/testfixtures"
+	"github.com/compliwise/capture/internal/installer/testfixtures"
 )
 
 func TestValidateKeyMatchesCert(t *testing.T) {
@@ -23,8 +24,8 @@ func TestValidateKeyMatchesCertMismatch(t *testing.T) {
 		t.Fatal("expected key mismatch error")
 	}
 
-	coded, ok := err.(*CodedError)
-	if !ok || coded.Code != "ERR_KEY_MISMATCH" {
+	var coded *CodedError
+	if !errors.As(err, &coded) || coded.Code != "ERR_KEY_MISMATCH" {
 		t.Fatalf("expected ERR_KEY_MISMATCH, got %v", err)
 	}
 }

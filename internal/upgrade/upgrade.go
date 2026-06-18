@@ -15,12 +15,12 @@ import (
 type State string
 
 const (
-	StatePending      State = "pending"
-	StateDownloading  State = "downloading"
-	StateVerifying    State = "verifying"
-	StateApplying     State = "applying"
-	StateCurrent      State = "current"
-	StateFailed       State = "failed"
+	StatePending     State = "pending"
+	StateDownloading State = "downloading"
+	StateVerifying   State = "verifying"
+	StateApplying    State = "applying"
+	StateCurrent     State = "current"
+	StateFailed      State = "failed"
 )
 
 // Config controls where upgrades are staged and applied.
@@ -72,8 +72,6 @@ func (r *Runner) Tick(
 	platform string,
 	hints PolicyHints,
 ) (newVersion string, status State, err error) {
-	newVersion = runningVersion
-	status = r.state
 	if hints.TargetVersion == "" {
 		r.state = StateCurrent
 		return runningVersion, StateCurrent, nil
@@ -90,7 +88,6 @@ func (r *Runner) Tick(
 	}
 
 	r.state = StateDownloading
-	status = StateDownloading
 
 	grant, err := client.GetUpgradeArtifact(ctx, hints.TargetVersion, platform)
 	if err != nil {
@@ -105,14 +102,12 @@ func (r *Runner) Tick(
 	}
 
 	r.state = StateVerifying
-	status = StateVerifying
 	if err := VerifySHA256(data, grant.SHA256); err != nil {
 		r.state = StateFailed
 		return runningVersion, StateFailed, err
 	}
 
 	r.state = StateApplying
-	status = StateApplying
 	if err := r.applyBinary(data); err != nil {
 		r.state = StateFailed
 		return runningVersion, StateFailed, err

@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bluewave-labs/capture/internal/installer"
-	"github.com/bluewave-labs/capture/internal/installer/testfixtures"
+	"github.com/compliwise/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer/testfixtures"
 )
 
 type mockCommandExecutor struct {

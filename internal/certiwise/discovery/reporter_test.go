@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
+	"github.com/compliwise/capture/internal/certiwise"
 )
 
 func TestBuildDiscoveryScanEventShape(t *testing.T) {

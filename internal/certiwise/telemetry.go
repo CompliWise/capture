@@ -3,6 +3,7 @@ package certiwise
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -23,16 +24,17 @@ type TelemetryEvent struct {
 	Payload       any    `json:"payload"`
 }
 
-// TlsHandshakePayload is the tls.handshake event payload.
-type TlsHandshakePayload struct {
-	ServerName           string   `json:"serverName"`
-	PeerAddress          string   `json:"peerAddress"`
-	TLSVersion           string   `json:"tlsVersion"`
-	CipherSuite          string   `json:"cipherSuite"`
-	PresentedChainSha256 []string `json:"presentedChainSha256"`
-	ValidationResult     string   `json:"validationResult"`
-	ValidationErrors     []string `json:"validationErrors"`
-	DurationMs           int      `json:"durationMs"`
+// TLSHandshakePayload is the tls.handshake event payload.
+type TLSHandshakePayload struct {
+	ServerName              string   `json:"serverName"`
+	PeerAddress             string   `json:"peerAddress"`
+	TLSVersion              string   `json:"tlsVersion"`
+	CipherSuite             string   `json:"cipherSuite"`
+	PresentedChainSha256    []string `json:"presentedChainSha256"`
+	PresentedChainSubjectCN []string `json:"presentedChainSubjectCn,omitempty"`
+	ValidationResult        string   `json:"validationResult"`
+	ValidationErrors        []string `json:"validationErrors"`
+	DurationMs              int      `json:"durationMs"`
 }
 
 // SyntheticCheckPayload is the synthetic.check event payload.
@@ -146,7 +148,8 @@ func (c *Client) PostTelemetryBatch(events []TelemetryEvent) error {
 
 // IsForbiddenAPIError reports whether an API client error is an HTTP 403 response.
 func IsForbiddenAPIError(err error) bool {
-	if batchErr, ok := err.(*TelemetryBatchError); ok {
+	var batchErr *TelemetryBatchError
+	if errors.As(err, &batchErr) {
 		return batchErr.StatusCode == http.StatusForbidden
 	}
 	return err != nil && strings.Contains(err.Error(), "status 403")

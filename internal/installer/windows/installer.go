@@ -3,7 +3,7 @@ package windows
 import (
 	"context"
 
-	"github.com/bluewave-labs/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer"
 )
 
 // Installer implements windows_cert_store for trust anchors and IIS server identity.

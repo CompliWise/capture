@@ -1,6 +1,6 @@
 package handler
 
-import "github.com/bluewave-labs/capture/internal/metric"
+import "github.com/compliwise/capture/internal/metric"
 
 type APIResponse struct {
 	Data    metric.Metric      `json:"data"`

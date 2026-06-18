@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/bluewave-labs/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer"
 )
 
 type commandRunner interface {
@@ -55,7 +55,7 @@ func (i *Installer) Install(_ context.Context, opts installer.InstallOptions) (s
 	var logLines []string
 	logLines = append(logLines, fmt.Sprintf("staged PEM at %s", certPath))
 
-	systemID := strings.TrimSpace(opts.SystemId)
+	systemID := strings.TrimSpace(opts.SystemID)
 	if opts.GatewayMode {
 		if systemID != "" {
 			logLines = append(

@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/bluewave-labs/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer"
 )
 
 // Installer implements python_certifi_bundle for trust anchors.

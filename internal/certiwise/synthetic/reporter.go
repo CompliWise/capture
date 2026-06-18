@@ -3,7 +3,7 @@ package synthetic
 import (
 	"time"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
+	"github.com/compliwise/capture/internal/certiwise"
 )
 
 func intPtr(value int) *int {

@@ -8,11 +8,11 @@ const syntheticMonitorsPath = "/api/v1/agent/synthetic-monitors"
 
 // SyntheticAssertions mirrors monitor assertion rules from the API.
 type SyntheticAssertions struct {
-	MinTlsVersion      string   `json:"minTlsVersion"`
+	MinTLSVersion      string   `json:"minTlsVersion"`
 	MaxDaysUntilExpiry int      `json:"maxDaysUntilExpiry"`
 	ExpectedSan        []string `json:"expectedSan,omitempty"`
 	MaxResponseTimeMs  int      `json:"maxResponseTimeMs,omitempty"`
-	ExpectHttpStatus   int      `json:"expectHttpStatus,omitempty"`
+	ExpectHTTPStatus   int      `json:"expectHttpStatus,omitempty"`
 }
 
 // SyntheticMonitorPullItem is one monitor returned by GET /agent/synthetic-monitors.

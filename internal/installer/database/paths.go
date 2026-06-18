@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/bluewave-labs/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer"
 )
 
 // ExpandTrustStorePath expands a leading ~ using dbUser home or the current user.

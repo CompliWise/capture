@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
-	"github.com/bluewave-labs/capture/internal/upgrade"
+	"github.com/compliwise/capture/internal/certiwise"
+	"github.com/compliwise/capture/internal/upgrade"
 )
 
 type heartbeatState struct {

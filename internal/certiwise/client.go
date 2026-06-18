@@ -16,14 +16,14 @@ import (
 
 // ClientConfig holds enterprise connectivity options for CompliWise API calls.
 type ClientConfig struct {
-	BaseURL          string
-	AgentToken       string
-	ProxyURL         string
-	MtlsCertPath     string
-	MtlsKeyPath      string
-	MtlsCAPath       string
-	APICABundlePath  string
-	APIPinSHA256     string
+	BaseURL            string
+	AgentToken         string
+	ProxyURL           string
+	MtlsCertPath       string
+	MtlsKeyPath        string
+	MtlsCAPath         string
+	APICABundlePath    string
+	APIPinSHA256       string
 	InsecureSkipVerify bool
 }
 
@@ -184,14 +184,14 @@ func NewClientFromEnv() (*Client, error) {
 	}
 
 	return NewClient(ClientConfig{
-		BaseURL:           baseURL,
-		AgentToken:        os.Getenv("COMPLIWISE_AGENT_TOKEN"),
-		ProxyURL:          os.Getenv("COMPLIWISE_PROXY_URL"),
-		MtlsCertPath:      os.Getenv("COMPLIWISE_MTLS_CERT"),
-		MtlsKeyPath:       os.Getenv("COMPLIWISE_MTLS_KEY"),
-		MtlsCAPath:        os.Getenv("COMPLIWISE_MTLS_CA"),
-		APICABundlePath:   os.Getenv("COMPLIWISE_API_CA_BUNDLE"),
-		APIPinSHA256:      os.Getenv("COMPLIWISE_API_PIN_SHA256"),
+		BaseURL:            baseURL,
+		AgentToken:         os.Getenv("COMPLIWISE_AGENT_TOKEN"),
+		ProxyURL:           os.Getenv("COMPLIWISE_PROXY_URL"),
+		MtlsCertPath:       os.Getenv("COMPLIWISE_MTLS_CERT"),
+		MtlsKeyPath:        os.Getenv("COMPLIWISE_MTLS_KEY"),
+		MtlsCAPath:         os.Getenv("COMPLIWISE_MTLS_CA"),
+		APICABundlePath:    os.Getenv("COMPLIWISE_API_CA_BUNDLE"),
+		APIPinSHA256:       os.Getenv("COMPLIWISE_API_PIN_SHA256"),
 		InsecureSkipVerify: strings.EqualFold(os.Getenv("COMPLIWISE_INSECURE_SKIP_VERIFY"), "true"),
 	})
 }

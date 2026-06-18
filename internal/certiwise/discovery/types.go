@@ -3,7 +3,7 @@ package discovery
 import (
 	"time"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
+	"github.com/compliwise/capture/internal/certiwise"
 )
 
 const (

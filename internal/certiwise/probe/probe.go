@@ -5,8 +5,8 @@ import (
 	"crypto/x509"
 	"time"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
-	cwconfig "github.com/bluewave-labs/capture/internal/certiwise/config"
+	"github.com/compliwise/capture/internal/certiwise"
+	cwconfig "github.com/compliwise/capture/internal/certiwise/config"
 )
 
 // ResolveTargetsFromConfig resolves probe targets from config and assignments pull.
@@ -53,38 +53,46 @@ func Probe(ctx context.Context, target ProbeTarget, cfg *cwconfig.Config) ProbeR
 		peerAddress = PeerAddressForTarget(target)
 	}
 
-	chain := selectChainThumbprints(handshake.ChainSHA256, outcome.VerifiedChain)
+	chain, subjectCns := selectChainFields(
+		handshake.ChainSHA256,
+		handshake.PeerCerts,
+		outcome.VerifiedChain,
+	)
 	tlsVersion := handshake.TLSVersion
 	cipherSuite := handshake.CipherSuite
 
 	if len(chain) == 0 {
 		chain = []string{handshakeErrorThumbprint}
+		subjectCns = nil
 		tlsVersion = "TLS1.0"
 		cipherSuite = "TLS_FALLBACK_SCSV"
 	}
 
 	return ProbeResult{
-		ServerName:           serverName,
-		PeerAddress:          peerAddress,
-		TLSVersion:           tlsVersion,
-		CipherSuite:          cipherSuite,
-		PresentedChainSha256: chain,
-		ValidationResult:     outcome.Result,
-		ValidationErrors:     outcome.Errors,
-		DurationMs:           handshake.DurationMs,
+		ServerName:              serverName,
+		PeerAddress:             peerAddress,
+		TLSVersion:              tlsVersion,
+		CipherSuite:             cipherSuite,
+		PresentedChainSha256:    chain,
+		PresentedChainSubjectCN: subjectCns,
+		ValidationResult:        outcome.Result,
+		ValidationErrors:        outcome.Errors,
+		DurationMs:              handshake.DurationMs,
 	}
 }
 
-func selectChainThumbprints(
-	presented []string,
+func selectChainFields(
+	presentedThumbprints []string,
+	presentedCerts []*x509.Certificate,
 	verified []*x509.Certificate,
-) []string {
+) ([]string, []string) {
 	verifiedThumbprints := chainThumbprints(verified)
-	if len(verifiedThumbprints) > len(presented) {
-		return verifiedThumbprints
+	verifiedSubjectCns := chainSubjectCNs(verified)
+	if len(verifiedThumbprints) > len(presentedThumbprints) {
+		return verifiedThumbprints, verifiedSubjectCns
 	}
-	if len(presented) > 0 {
-		return presented
+	if len(presentedThumbprints) > 0 {
+		return presentedThumbprints, chainSubjectCNs(presentedCerts)
 	}
-	return verifiedThumbprints
+	return verifiedThumbprints, verifiedSubjectCns
 }

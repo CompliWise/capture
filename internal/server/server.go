@@ -10,9 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/bluewave-labs/capture/internal/config"
-	"github.com/bluewave-labs/capture/internal/server/handler"
-	"github.com/bluewave-labs/capture/internal/server/middleware"
+	"github.com/compliwise/capture/internal/config"
+	"github.com/compliwise/capture/internal/server/handler"
+	"github.com/compliwise/capture/internal/server/middleware"
 	"github.com/gin-gonic/gin"
 )
 

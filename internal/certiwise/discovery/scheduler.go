@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
-	cwconfig "github.com/bluewave-labs/capture/internal/certiwise/config"
+	"github.com/compliwise/capture/internal/certiwise"
+	cwconfig "github.com/compliwise/capture/internal/certiwise/config"
 )
 
 // Scheduler coordinates discovery scan triggers.
@@ -158,11 +158,11 @@ func assignmentsFromPull(pull *certiwise.AssignmentsPullResponse) []AssignmentRe
 	assignments := make([]AssignmentRef, 0, len(pull.Assignments))
 	for _, item := range pull.Assignments {
 		assignments = append(assignments, AssignmentRef{
-			Alias:            item.Config.Alias,
-			TrustStorePath:   item.Config.TrustStorePath,
-			CertFileName:     item.Config.CertFileName,
-			TrustStoreType:   item.TrustStoreType,
-			VerifyEndpoint:   item.Config.VerifyEndpoint,
+			Alias:          item.Config.Alias,
+			TrustStorePath: item.Config.TrustStorePath,
+			CertFileName:   item.Config.CertFileName,
+			TrustStoreType: item.TrustStoreType,
+			VerifyEndpoint: item.Config.VerifyEndpoint,
 		})
 	}
 	return assignments

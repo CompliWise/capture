@@ -44,7 +44,7 @@ $arch = switch ($env:PROCESSOR_ARCHITECTURE) {
 Write-Host "Architecture: $arch"
 
 # Fetch latest release from GitHub
-$release    = Invoke-RestMethod -Uri 'https://api.github.com/repos/bluewave-labs/capture/releases/latest' `
+$release    = Invoke-RestMethod -Uri 'https://api.github.com/repos/compliwise/capture/releases/latest' `
                                 -Headers @{ 'User-Agent' = 'capture-install-script' }
 $version    = $release.tag_name
 $versionNum = $version.TrimStart('v')
@@ -113,7 +113,7 @@ if ($existingService) {
         -Name           $ServiceName `
         -BinaryPathName $targetBinary `
         -DisplayName    'Capture Monitoring Agent' `
-        -Description    'Capture hardware monitoring agent (https://github.com/bluewave-labs/capture)' `
+        -Description    'Capture hardware monitoring agent (https://github.com/compliwise/capture)' `
         -StartupType    Automatic | Out-Null
     Write-Host "Created service '$ServiceName'."
 }

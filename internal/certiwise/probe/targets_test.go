@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
+	"github.com/compliwise/capture/internal/certiwise"
 )
 
 func TestParseProbeURL(t *testing.T) {

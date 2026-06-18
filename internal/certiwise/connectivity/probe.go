@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
-	cwconfig "github.com/bluewave-labs/capture/internal/certiwise/config"
+	"github.com/compliwise/capture/internal/certiwise"
+	cwconfig "github.com/compliwise/capture/internal/certiwise/config"
 )
 
 // RunProbe executes connectivity steps against the configured API base URL only.
@@ -260,7 +260,7 @@ func runTLSHandshake(ctx context.Context, parsed *url.URL, opts probeOptions) ce
 
 	dialer := &net.Dialer{Timeout: 10 * time.Second}
 	address := net.JoinHostPort(host, port)
-	conn, err := tls.DialWithDialer(dialer, "tcp", address, tlsConfig)
+	rawConn, err := dialer.DialContext(ctx, "tcp", address)
 	durationMs := int(time.Since(started).Milliseconds())
 
 	if err != nil {
@@ -269,6 +269,17 @@ func runTLSHandshake(ctx context.Context, parsed *url.URL, opts probeOptions) ce
 			Passed:     false,
 			Message:    truncateMessage(fmt.Sprintf("TLS handshake failed: %v", err)),
 			DurationMs: durationMs,
+		}
+	}
+
+	conn := tls.Client(rawConn, tlsConfig)
+	if err := conn.HandshakeContext(ctx); err != nil {
+		_ = rawConn.Close()
+		return certiwise.ConnectivityTestStep{
+			Step:       StepTLSHandshake,
+			Passed:     false,
+			Message:    truncateMessage(fmt.Sprintf("TLS handshake failed: %v", err)),
+			DurationMs: int(time.Since(started).Milliseconds()),
 		}
 	}
 	_ = conn.Close()

@@ -26,7 +26,7 @@ func RunCheck(ctx context.Context, monitor Monitor, userAgent string) CheckResul
 	var peerCerts []*x509.Certificate
 	var negotiatedVersion uint16
 	tlsConfig := &tls.Config{
-		MinVersion:         tlsMinVersion(monitor.Assertions.MinTlsVersion),
+		MinVersion:         tlsMinVersion(monitor.Assertions.MinTLSVersion),
 		ServerName:         serverNameFromURL(monitor.URL),
 		InsecureSkipVerify: true,
 		VerifyPeerCertificate: func(rawCerts [][]byte, _ [][]*x509.Certificate) error {
@@ -92,22 +92,22 @@ func evaluateAssertions(
 	var failures []string
 	assertions := monitor.Assertions
 
-	if assertions.MinTlsVersion != "" && negotiatedVersion > 0 {
-		required := tlsMinVersion(assertions.MinTlsVersion)
+	if assertions.MinTLSVersion != "" && negotiatedVersion > 0 {
+		required := tlsMinVersion(assertions.MinTLSVersion)
 		if negotiatedVersion < required {
 			failures = append(failures, fmt.Sprintf(
 				"TLS version %s is below minimum %s",
 				tlsVersionLabel(negotiatedVersion),
-				assertions.MinTlsVersion,
+				assertions.MinTLSVersion,
 			))
 		}
 	}
 
-	if assertions.ExpectHttpStatus > 0 && result.HTTPStatusCode != assertions.ExpectHttpStatus {
+	if assertions.ExpectHTTPStatus > 0 && result.HTTPStatusCode != assertions.ExpectHTTPStatus {
 		failures = append(failures, fmt.Sprintf(
 			"HTTP status %d does not match expected %d",
 			result.HTTPStatusCode,
-			assertions.ExpectHttpStatus,
+			assertions.ExpectHTTPStatus,
 		))
 	}
 
@@ -270,14 +270,14 @@ func downResult(result CheckResult, message string) CheckResult {
 	return result
 }
 
-func truncateError(message string, max int) string {
-	if len(message) <= max {
+func truncateError(message string, maxLen int) string {
+	if len(message) <= maxLen {
 		return message
 	}
-	if max <= 3 {
-		return message[:max]
+	if maxLen <= 3 {
+		return message[:maxLen]
 	}
-	return message[:max-3] + "..."
+	return message[:maxLen-3] + "..."
 }
 
 func serverNameFromURL(rawURL string) string {

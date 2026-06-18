@@ -16,40 +16,40 @@ const (
 
 // AssignmentConfig mirrors durable assignment configuration from the API.
 type AssignmentConfig struct {
-	Alias            string   `json:"alias,omitempty"`
-	AutoRenew        *bool    `json:"autoRenew,omitempty"`
-	RemoveOnRevoke   *bool    `json:"removeOnRevoke,omitempty"`
-	VerifyEndpoint   string   `json:"verifyEndpoint,omitempty"`
-	VerifyServerName string   `json:"verifyServerName,omitempty"`
-	TrustStorePath    string   `json:"trustStorePath,omitempty"`
-	KeychainPath      string   `json:"keychainPath,omitempty"`
-	StorePasswordRef  string   `json:"storePasswordRef,omitempty"`
-	JavaHome          string   `json:"javaHome,omitempty"`
-	PythonVenvPath    string   `json:"pythonVenvPath,omitempty"`
-	ReloadCommand     []string `json:"reloadCommand,omitempty"`
-	CertFileName     string   `json:"certFileName,omitempty"`
-	KeyFileName      string   `json:"keyFileName,omitempty"`
-	KeyPermissionMode string  `json:"keyPermissionMode,omitempty"`
-	EnvFilePath      string   `json:"envFilePath,omitempty"`
-	UseOpensslCa     bool     `json:"useOpensslCa,omitempty"`
-	NodeFlags        []string `json:"nodeFlags,omitempty"`
-	PreferOsStore    bool     `json:"preferOsStore,omitempty"`
-	DbUser           string   `json:"dbUser,omitempty"`
-	RacfProfile      string   `json:"racfProfile,omitempty"`
-	SystemId         string   `json:"systemId,omitempty"`
-	GatewayMode      bool     `json:"gatewayMode,omitempty"`
-	StoreLocation    string   `json:"storeLocation,omitempty"`
-	StoreName        string   `json:"storeName,omitempty"`
-	IIS              *IISAssignmentConfig `json:"iis,omitempty"`
+	Alias             string               `json:"alias,omitempty"`
+	AutoRenew         *bool                `json:"autoRenew,omitempty"`
+	RemoveOnRevoke    *bool                `json:"removeOnRevoke,omitempty"`
+	VerifyEndpoint    string               `json:"verifyEndpoint,omitempty"`
+	VerifyServerName  string               `json:"verifyServerName,omitempty"`
+	TrustStorePath    string               `json:"trustStorePath,omitempty"`
+	KeychainPath      string               `json:"keychainPath,omitempty"`
+	StorePasswordRef  string               `json:"storePasswordRef,omitempty"`
+	JavaHome          string               `json:"javaHome,omitempty"`
+	PythonVenvPath    string               `json:"pythonVenvPath,omitempty"`
+	ReloadCommand     []string             `json:"reloadCommand,omitempty"`
+	CertFileName      string               `json:"certFileName,omitempty"`
+	KeyFileName       string               `json:"keyFileName,omitempty"`
+	KeyPermissionMode string               `json:"keyPermissionMode,omitempty"`
+	EnvFilePath       string               `json:"envFilePath,omitempty"`
+	UseOpensslCa      bool                 `json:"useOpensslCa,omitempty"`
+	NodeFlags         []string             `json:"nodeFlags,omitempty"`
+	PreferOsStore     bool                 `json:"preferOsStore,omitempty"`
+	DBUser            string               `json:"dbUser,omitempty"`
+	RacfProfile       string               `json:"racfProfile,omitempty"`
+	SystemID          string               `json:"systemId,omitempty"`
+	GatewayMode       bool                 `json:"gatewayMode,omitempty"`
+	StoreLocation     string               `json:"storeLocation,omitempty"`
+	StoreName         string               `json:"storeName,omitempty"`
+	IIS               *IISAssignmentConfig `json:"iis,omitempty"`
 }
 
 // IISAssignmentConfig configures IIS HTTPS binding for Windows server identity.
 type IISAssignmentConfig struct {
-	SiteName     string `json:"siteName"`
-	BindingHost  string `json:"bindingHost,omitempty"`
-	BindingPort  int    `json:"bindingPort,omitempty"`
-	IPAddress    string `json:"ipAddress,omitempty"`
-	SNI          bool   `json:"sni,omitempty"`
+	SiteName    string `json:"siteName"`
+	BindingHost string `json:"bindingHost,omitempty"`
+	BindingPort int    `json:"bindingPort,omitempty"`
+	IPAddress   string `json:"ipAddress,omitempty"`
+	SNI         bool   `json:"sni,omitempty"`
 }
 
 // AssignmentMaterial is ephemeral PEM material returned on agent pull.
@@ -84,13 +84,13 @@ type AgentPullConfig struct {
 
 // AssignmentsPullResponse is the body of GET /agent/assignments.
 type AssignmentsPullResponse struct {
-	Etag                     string               `json:"etag"`
-	ConfigEtag               string               `json:"configEtag"`
-	Config                   AgentPullConfig      `json:"config"`
-	Assignments              []AssignmentPullItem `json:"assignments"`
-	ConnectivityTestRequested bool                `json:"connectivityTestRequested"`
-	DiscoveryScanRequestedAt *string              `json:"discoveryScanRequestedAt"`
-	LastDiscoveryScanAt      *string              `json:"lastDiscoveryScanAt"`
+	Etag                      string               `json:"etag"`
+	ConfigEtag                string               `json:"configEtag"`
+	Config                    AgentPullConfig      `json:"config"`
+	Assignments               []AssignmentPullItem `json:"assignments"`
+	ConnectivityTestRequested bool                 `json:"connectivityTestRequested"`
+	DiscoveryScanRequestedAt  *string              `json:"discoveryScanRequestedAt"`
+	LastDiscoveryScanAt       *string              `json:"lastDiscoveryScanAt"`
 }
 
 // DiscoveryRequestedAt returns the on-demand scan request timestamp, if any.

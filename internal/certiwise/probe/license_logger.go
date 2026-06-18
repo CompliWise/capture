@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
+	"github.com/compliwise/capture/internal/certiwise"
 )
 
 // LicenseDeniedLogger rate-limits license-denied warnings to once per hour.

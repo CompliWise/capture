@@ -8,12 +8,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
+	"github.com/compliwise/capture/internal/certiwise"
 )
 
-func TestBuildTlsHandshakeEventShape(t *testing.T) {
+func TestBuildTLSHandshakeEventShape(t *testing.T) {
 	observedAt := time.Date(2026, 6, 13, 10, 5, 0, 0, time.UTC)
-	event := BuildTlsHandshakeEvent(
+	event := BuildTLSHandshakeEvent(
 		ProbeTarget{
 			ApplicationID: "app-payment-api",
 			CertificateID: "cert-abc123",
@@ -43,9 +43,9 @@ func TestBuildTlsHandshakeEventShape(t *testing.T) {
 		t.Fatalf("unexpected deploymentId: %q", event.DeploymentID)
 	}
 
-	payload, ok := event.Payload.(certiwise.TlsHandshakePayload)
+	payload, ok := event.Payload.(certiwise.TLSHandshakePayload)
 	if !ok {
-		t.Fatalf("expected TlsHandshakePayload, got %T", event.Payload)
+		t.Fatalf("expected TLSHandshakePayload, got %T", event.Payload)
 	}
 	if payload.ValidationResult != validationOK {
 		t.Fatalf("expected ok validation, got %q", payload.ValidationResult)

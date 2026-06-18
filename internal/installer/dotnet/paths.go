@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/bluewave-labs/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer"
 )
 
 const dotnetCAEnvKey = "DOTNET_SYSTEM_NET_HTTP_SOCKETSHTTPHANDLER_DLLIMPORTEXPORT_CUSTOMCAFILE"

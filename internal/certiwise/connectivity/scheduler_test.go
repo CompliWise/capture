@@ -9,8 +9,8 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
-	cwconfig "github.com/bluewave-labs/capture/internal/certiwise/config"
+	"github.com/compliwise/capture/internal/certiwise"
+	cwconfig "github.com/compliwise/capture/internal/certiwise/config"
 )
 
 func TestSchedulerSkipsWhenFlagFalse(t *testing.T) {

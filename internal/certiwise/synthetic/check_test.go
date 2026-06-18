@@ -18,7 +18,7 @@ func TestRunCheckStatusUp(t *testing.T) {
 		URL:       server.URL,
 		TimeoutMs: 5000,
 		Assertions: Assertions{
-			ExpectHttpStatus: http.StatusOK,
+			ExpectHTTPStatus: http.StatusOK,
 		},
 	}, "CompliWise-Capture-Agent/test")
 
@@ -40,7 +40,7 @@ func TestRunCheckHttpStatusDown(t *testing.T) {
 		URL:       server.URL,
 		TimeoutMs: 5000,
 		Assertions: Assertions{
-			ExpectHttpStatus: http.StatusOK,
+			ExpectHTTPStatus: http.StatusOK,
 		},
 	}, "CompliWise-Capture-Agent/test")
 
@@ -60,7 +60,7 @@ func TestRunCheckSlowResponseDegraded(t *testing.T) {
 		URL:       server.URL,
 		TimeoutMs: 5000,
 		Assertions: Assertions{
-			ExpectHttpStatus:  http.StatusOK,
+			ExpectHTTPStatus:  http.StatusOK,
 			MaxResponseTimeMs: 50,
 		},
 	}, "CompliWise-Capture-Agent/test")

@@ -16,9 +16,9 @@ func TestPullAssignmentsUsesIfNoneMatchAndHandles304(t *testing.T) {
 		if count == 1 {
 			w.Header().Set("ETag", `W/"sha256:first"`)
 			_ = json.NewEncoder(w).Encode(AssignmentsPullResponse{
-				Etag:         "sha256:first",
-				ConfigEtag:   "sha256:cfg",
-				Assignments:  []AssignmentPullItem{},
+				Etag:        "sha256:first",
+				ConfigEtag:  "sha256:cfg",
+				Assignments: []AssignmentPullItem{},
 			})
 			return
 		}

@@ -34,9 +34,22 @@ linters:
       - builtin$
       - examples$
   settings:
+    gocyclo:
+      min-complexity: 60
     gosec:
       excludes:
         - G117 # to exclude 'Exported struct field "APISecret" (JSON key "APISecret") matches secret pattern'
+        - G402 # TLS probes and connectivity checks intentionally skip verification when configured
+        - G123 # custom VerifyPeerCertificate for pinning and cert inspection, not default chain trust
+        - G204 # installers run administrator-configured reload commands
+        - G703 # trust-store paths come from assignment configuration
+        - G306 # test fixtures use non-sensitive placeholder files
+        - G118 # monitor cancel func is stored on Runner.active and invoked on resync/stop
+    revive:
+      rules:
+        - name: exported
+          arguments:
+            - disableStutteringCheck
 
 formatters:
   enable:

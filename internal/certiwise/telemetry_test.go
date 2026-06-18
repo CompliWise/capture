@@ -2,6 +2,7 @@ package certiwise
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -66,7 +67,7 @@ func TestPostTelemetryBatch(t *testing.T) {
 }
 
 func TestPostTelemetryBatchLicenseError(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusForbidden)
 		_ = json.NewEncoder(w).Encode(apiError{Message: "This feature is not included in your plan. Upgrade to unlock it."})
 	}))
@@ -83,8 +84,8 @@ func TestPostTelemetryBatchLicenseError(t *testing.T) {
 	err = client.PostTelemetryBatch([]TelemetryEvent{
 		{Type: "discovery.scan", ObservedAt: "2026-06-13T10:00:00Z", Payload: map[string]any{"certificatesFound": 0, "items": []any{}}},
 	})
-	batchErr, ok := err.(*TelemetryBatchError)
-	if !ok {
+	var batchErr *TelemetryBatchError
+	if !errors.As(err, &batchErr) {
 		t.Fatalf("expected TelemetryBatchError, got %T: %v", err, err)
 	}
 	if batchErr.StatusCode != http.StatusForbidden {

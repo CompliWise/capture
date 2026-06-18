@@ -135,23 +135,31 @@ func ProfileFor(kind DistroKind) DistroProfile {
 	case DistroAlpine:
 		return DistroProfile{
 			Kind:       DistroAlpine,
-			InstallDir: "/usr/local/share/ca-certificates",
+			InstallDir: defaultLinuxCAPath,
 			FileExt:    ".crt",
 			BundlePath: "/etc/ssl/cert.pem",
 			UpdateCommands: [][]string{
 				{"update-ca-certificates"},
 			},
 		}
+	case DistroDebian:
+		return debianFamilyProfile(DistroDebian)
+	case DistroUnknown:
+		return debianFamilyProfile(DistroUnknown)
 	default:
-		return DistroProfile{
-			Kind:       DistroDebian,
-			InstallDir: "/usr/local/share/ca-certificates",
-			FileExt:    ".crt",
-			BundlePath: "/etc/ssl/certs/ca-certificates.crt",
-			UpdateCommands: [][]string{
-				{"update-ca-certificates"},
-			},
-		}
+		return debianFamilyProfile(DistroDebian)
+	}
+}
+
+func debianFamilyProfile(kind DistroKind) DistroProfile {
+	return DistroProfile{
+		Kind:       kind,
+		InstallDir: defaultLinuxCAPath,
+		FileExt:    ".crt",
+		BundlePath: "/etc/ssl/certs/ca-certificates.crt",
+		UpdateCommands: [][]string{
+			{"update-ca-certificates"},
+		},
 	}
 }
 

@@ -3,7 +3,7 @@ package connectivity
 import (
 	"log"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
+	"github.com/compliwise/capture/internal/certiwise"
 )
 
 // SubmitResult posts connectivity probe steps to the control plane.

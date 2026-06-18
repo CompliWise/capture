@@ -6,8 +6,8 @@ import (
 	"log"
 	"strings"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
-	cwconfig "github.com/bluewave-labs/capture/internal/certiwise/config"
+	"github.com/compliwise/capture/internal/certiwise"
+	cwconfig "github.com/compliwise/capture/internal/certiwise/config"
 )
 
 // SyncMonitors pulls monitor assignments and reconciles the runner pool.
@@ -44,11 +44,11 @@ func SyncMonitors(
 // MonitorFromAPI maps an API monitor row to the runner monitor type.
 func MonitorFromAPI(item certiwise.SyntheticMonitorPullItem) Monitor {
 	assertions := Assertions{
-		MinTlsVersion:      item.Assertions.MinTlsVersion,
+		MinTLSVersion:      item.Assertions.MinTLSVersion,
 		MaxDaysUntilExpiry: item.Assertions.MaxDaysUntilExpiry,
 		ExpectedSan:        item.Assertions.ExpectedSan,
 		MaxResponseTimeMs:  item.Assertions.MaxResponseTimeMs,
-		ExpectHttpStatus:   item.Assertions.ExpectHttpStatus,
+		ExpectHTTPStatus:   item.Assertions.ExpectHTTPStatus,
 	}
 	return Monitor{
 		ID:              item.ID,

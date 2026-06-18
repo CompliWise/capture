@@ -3,7 +3,7 @@ package windows
 import (
 	"strings"
 
-	"github.com/bluewave-labs/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer"
 )
 
 // DelegateTrustAnchor imports a trust anchor into LocalMachine\Root for dotnet OS-store delegation.

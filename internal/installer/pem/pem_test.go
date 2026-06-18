@@ -1,13 +1,14 @@
 package pem
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/bluewave-labs/capture/internal/installer"
-	"github.com/bluewave-labs/capture/internal/installer/testfixtures"
+	"github.com/compliwise/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer/testfixtures"
 )
 
 func TestPemInstallerInstallRemove(t *testing.T) {
@@ -174,7 +175,8 @@ func TestServerIdentityKeyMismatch(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected key mismatch error")
 	}
-	if coded, ok := err.(*installer.CodedError); !ok || coded.Code != "ERR_KEY_MISMATCH" {
+	var coded *installer.CodedError
+	if !errors.As(err, &coded) || coded.Code != "ERR_KEY_MISMATCH" {
 		t.Fatalf("expected ERR_KEY_MISMATCH, got %v", err)
 	}
 }
@@ -201,7 +203,8 @@ func TestServerIdentityReloadFailure(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected reload failure")
 	}
-	if coded, ok := err.(*installer.CodedError); !ok || coded.Code != "ERR_RELOAD_FAILED" {
+	var coded *installer.CodedError
+	if !errors.As(err, &coded) || coded.Code != "ERR_RELOAD_FAILED" {
 		t.Fatalf("expected ERR_RELOAD_FAILED, got %v", err)
 	}
 

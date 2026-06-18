@@ -5,8 +5,8 @@ import (
 	"log"
 	"sync"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
-	cwconfig "github.com/bluewave-labs/capture/internal/certiwise/config"
+	"github.com/compliwise/capture/internal/certiwise"
+	cwconfig "github.com/compliwise/capture/internal/certiwise/config"
 )
 
 // Scheduler runs connectivity probes when the control plane requests a test.

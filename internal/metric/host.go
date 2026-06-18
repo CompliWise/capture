@@ -1,7 +1,7 @@
 package metric
 
 import (
-	"github.com/bluewave-labs/capture/internal/system"
+	"github.com/compliwise/capture/internal/system"
 	"github.com/shirou/gopsutil/v4/host"
 )
 

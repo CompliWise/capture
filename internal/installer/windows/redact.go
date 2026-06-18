@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	privateKeyPattern = regexp.MustCompile(`(?s)-----BEGIN (?:RSA )?PRIVATE KEY-----.*?-----END (?:RSA )?PRIVATE KEY-----`)
+	privateKeyPattern  = regexp.MustCompile(`(?s)-----BEGIN (?:RSA )?PRIVATE KEY-----.*?-----END (?:RSA )?PRIVATE KEY-----`)
 	bearerTokenPattern = regexp.MustCompile(`(?i)bearer\s+[A-Za-z0-9\-._~+/]+=*`)
 )
 

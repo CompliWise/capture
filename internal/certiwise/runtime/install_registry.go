@@ -1,17 +1,17 @@
 package runtime
 
 import (
-	"github.com/bluewave-labs/capture/internal/installer"
-	"github.com/bluewave-labs/capture/internal/installer/database"
-	"github.com/bluewave-labs/capture/internal/installer/dotnet"
-	"github.com/bluewave-labs/capture/internal/installer/java"
-	"github.com/bluewave-labs/capture/internal/installer/linux"
-	"github.com/bluewave-labs/capture/internal/installer/macos"
-	"github.com/bluewave-labs/capture/internal/installer/mainframe"
-	"github.com/bluewave-labs/capture/internal/installer/node"
-	"github.com/bluewave-labs/capture/internal/installer/pem"
-	"github.com/bluewave-labs/capture/internal/installer/python"
-	wininstaller "github.com/bluewave-labs/capture/internal/installer/windows"
+	"github.com/compliwise/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer/database"
+	"github.com/compliwise/capture/internal/installer/dotnet"
+	"github.com/compliwise/capture/internal/installer/java"
+	"github.com/compliwise/capture/internal/installer/linux"
+	"github.com/compliwise/capture/internal/installer/macos"
+	"github.com/compliwise/capture/internal/installer/mainframe"
+	"github.com/compliwise/capture/internal/installer/node"
+	"github.com/compliwise/capture/internal/installer/pem"
+	"github.com/compliwise/capture/internal/installer/python"
+	wininstaller "github.com/compliwise/capture/internal/installer/windows"
 )
 
 func newDefaultInstallRegistry() *installer.Registry {

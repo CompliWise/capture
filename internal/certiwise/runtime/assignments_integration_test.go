@@ -3,8 +3,8 @@ package runtime
 import (
 	"testing"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
-	"github.com/bluewave-labs/capture/internal/installer"
+	"github.com/compliwise/capture/internal/certiwise"
+	"github.com/compliwise/capture/internal/installer"
 )
 
 func TestLinuxInstallerRegistered(t *testing.T) {
@@ -392,7 +392,7 @@ func TestBuildInstallRecordPostgreSQLPaths(t *testing.T) {
 		MaterialType:   "trust_anchor",
 		Config: certiwise.AssignmentConfig{
 			TrustStorePath: "/var/lib/postgresql/.postgresql/root.crt",
-			DbUser:         "postgres",
+			DBUser:         "postgres",
 		},
 	}
 	record := buildInstallRecord(
@@ -400,7 +400,7 @@ func TestBuildInstallRecordPostgreSQLPaths(t *testing.T) {
 		"thumb",
 		installer.InstallOptions{
 			TrustStorePath: "/var/lib/postgresql/.postgresql/root.crt",
-			DbUser:         "postgres",
+			DBUser:         "postgres",
 			CertFileName:   "root.crt",
 		},
 	)

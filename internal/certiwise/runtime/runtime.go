@@ -6,12 +6,12 @@ import (
 	"log"
 	"time"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
-	cwconfig "github.com/bluewave-labs/capture/internal/certiwise/config"
-	"github.com/bluewave-labs/capture/internal/certiwise/connectivity"
-	"github.com/bluewave-labs/capture/internal/certiwise/discovery"
-	"github.com/bluewave-labs/capture/internal/certiwise/probe"
-	"github.com/bluewave-labs/capture/internal/certiwise/synthetic"
+	"github.com/compliwise/capture/internal/certiwise"
+	cwconfig "github.com/compliwise/capture/internal/certiwise/config"
+	"github.com/compliwise/capture/internal/certiwise/connectivity"
+	"github.com/compliwise/capture/internal/certiwise/discovery"
+	"github.com/compliwise/capture/internal/certiwise/probe"
+	"github.com/compliwise/capture/internal/certiwise/synthetic"
 )
 
 // Start launches the CompliWise control-plane loop when COMPLIWISE_API_URL is configured.

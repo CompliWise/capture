@@ -4,9 +4,9 @@ import "time"
 
 // resettableTicker exposes a channel that fires on a resettable interval.
 type resettableTicker struct {
-	C      <-chan time.Time
-	reset  chan time.Duration
-	stop   chan struct{}
+	C       <-chan time.Time
+	reset   chan time.Duration
+	stop    chan struct{}
 	stopped chan struct{}
 }
 
@@ -16,9 +16,9 @@ func newResettableTicker(interval time.Duration) *resettableTicker {
 	}
 	out := make(chan time.Time, 1)
 	rt := &resettableTicker{
-		C:      out,
-		reset:  make(chan time.Duration, 1),
-		stop:   make(chan struct{}),
+		C:       out,
+		reset:   make(chan time.Duration, 1),
+		stop:    make(chan struct{}),
 		stopped: make(chan struct{}),
 	}
 	go rt.loop(out, interval)

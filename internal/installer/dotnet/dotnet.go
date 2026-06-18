@@ -9,9 +9,9 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/bluewave-labs/capture/internal/installer"
-	"github.com/bluewave-labs/capture/internal/installer/linux"
-	"github.com/bluewave-labs/capture/internal/installer/windows"
+	"github.com/compliwise/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer/linux"
+	"github.com/compliwise/capture/internal/installer/windows"
 )
 
 // Installer implements dotnet_root_store for trust anchors.

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bluewave-labs/capture/internal/installer/testfixtures"
+	"github.com/compliwise/capture/internal/installer/testfixtures"
 )
 
 func TestThumbprintFromPEM(t *testing.T) {

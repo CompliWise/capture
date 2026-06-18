@@ -7,11 +7,11 @@ import (
 	"os"
 	"time"
 
-	cwconfig "github.com/bluewave-labs/capture/internal/certiwise/config"
-	"github.com/bluewave-labs/capture/internal/certiwise/runtime"
-	"github.com/bluewave-labs/capture/internal/config"
-	"github.com/bluewave-labs/capture/internal/server"
-	"github.com/bluewave-labs/capture/internal/server/handler"
+	cwconfig "github.com/compliwise/capture/internal/certiwise/config"
+	"github.com/compliwise/capture/internal/certiwise/runtime"
+	"github.com/compliwise/capture/internal/config"
+	"github.com/compliwise/capture/internal/server"
+	"github.com/compliwise/capture/internal/server/handler"
 )
 
 // Application configuration variable that holds the settings.

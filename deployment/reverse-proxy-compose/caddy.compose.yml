@@ -17,7 +17,7 @@ services:
       - capture-network
 
   capture:
-    image: ghcr.io/bluewave-labs/capture:latest
+    image: ghcr.io/compliwise/capture:latest
     restart: unless-stopped
     expose:
       - "59232"

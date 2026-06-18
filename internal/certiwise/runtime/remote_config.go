@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
-	cwconfig "github.com/bluewave-labs/capture/internal/certiwise/config"
-	"github.com/bluewave-labs/capture/internal/certiwise/store"
+	"github.com/compliwise/capture/internal/certiwise"
+	cwconfig "github.com/compliwise/capture/internal/certiwise/config"
+	"github.com/compliwise/capture/internal/certiwise/store"
 )
 
 type remoteConfigState struct {

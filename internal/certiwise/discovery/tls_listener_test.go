@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
+	"github.com/compliwise/capture/internal/certiwise"
 )
 
 func TestTLSListenerPathIPv6(t *testing.T) {
@@ -183,7 +183,7 @@ func TestScanMergeIncludesTLSListenerItems(t *testing.T) {
 
 	found := false
 	for _, item := range result.Items {
-	 if item.Source == tlsListenerSource {
+		if item.Source == tlsListenerSource {
 			found = true
 			break
 		}

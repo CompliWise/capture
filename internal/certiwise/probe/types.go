@@ -37,14 +37,15 @@ type HandshakeResult struct {
 
 // ProbeResult is the full outcome of probing one target.
 type ProbeResult struct {
-	ServerName           string
-	PeerAddress          string
-	TLSVersion           string
-	CipherSuite          string
-	PresentedChainSha256 []string
-	ValidationResult     string
-	ValidationErrors     []string
-	DurationMs           int
+	ServerName              string
+	PeerAddress             string
+	TLSVersion              string
+	CipherSuite             string
+	PresentedChainSha256    []string
+	PresentedChainSubjectCN []string
+	ValidationResult        string
+	ValidationErrors        []string
+	DurationMs              int
 }
 
 // ValidationOutcome maps probe results to schema validationResult values.

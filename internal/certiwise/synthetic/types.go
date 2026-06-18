@@ -18,11 +18,11 @@ type Monitor struct {
 
 // Assertions holds optional HTTPS/TLS check rules.
 type Assertions struct {
-	MinTlsVersion      string
+	MinTLSVersion      string
 	MaxDaysUntilExpiry int
 	ExpectedSan        []string
 	MaxResponseTimeMs  int
-	ExpectHttpStatus   int
+	ExpectHTTPStatus   int
 }
 
 // CheckResult is the outcome of one synthetic HTTPS probe.

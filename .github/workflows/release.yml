@@ -25,7 +25,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
-      - 
+      -
         name: Install Syft
         run: |
           curl -sSfL https://get.anchore.io/syft | sudo sh -s -- -b /usr/local/bin
@@ -40,4 +40,4 @@ jobs:
           # Pass the GitHub token to GoReleaser
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Pass the registry and image name to GoReleaser
-          KO_DOCKER_REPO: ghcr.io/bluewave-labs/capture
+          KO_DOCKER_REPO: ghcr.io/compliwise/capture

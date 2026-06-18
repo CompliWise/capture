@@ -3,7 +3,7 @@ package java
 import (
 	"strings"
 
-	"github.com/bluewave-labs/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer"
 )
 
 // VerifyKeystoreAlias confirms the alias exists in the keystore.

@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/bluewave-labs/capture/internal/certiwise/probe"
+	"github.com/compliwise/capture/internal/certiwise/probe"
 	"github.com/gin-gonic/gin"
 )
 

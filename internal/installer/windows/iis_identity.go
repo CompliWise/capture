@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bluewave-labs/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer"
 )
 
 func installIISIdentity(

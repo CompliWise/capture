@@ -4,17 +4,17 @@ import "context"
 
 // InstallRecord captures filesystem metadata needed for rollback.
 type InstallRecord struct {
-	AssignmentID   string `json:"assignmentId"`
-	TrustStoreType string `json:"trustStoreType"`
-	Thumbprint     string `json:"thumbprint"`
-	CertPath       string `json:"certPath"`
-	KeyPath        string `json:"keyPath,omitempty"`
-	Alias          string `json:"alias,omitempty"`
-	TrustStorePath string `json:"trustStorePath,omitempty"`
-	EnvFilePath    string `json:"envFilePath,omitempty"`
-	PreferOsStore     bool   `json:"preferOsStore,omitempty"`
-	KeychainPath      string `json:"keychainPath,omitempty"`
-	CertCommonName    string `json:"certCommonName,omitempty"`
+	AssignmentID              string `json:"assignmentId"`
+	TrustStoreType            string `json:"trustStoreType"`
+	Thumbprint                string `json:"thumbprint"`
+	CertPath                  string `json:"certPath"`
+	KeyPath                   string `json:"keyPath,omitempty"`
+	Alias                     string `json:"alias,omitempty"`
+	TrustStorePath            string `json:"trustStorePath,omitempty"`
+	EnvFilePath               string `json:"envFilePath,omitempty"`
+	PreferOsStore             bool   `json:"preferOsStore,omitempty"`
+	KeychainPath              string `json:"keychainPath,omitempty"`
+	CertCommonName            string `json:"certCommonName,omitempty"`
 	StoreName                 string `json:"storeName,omitempty"`
 	BindingSnapshotThumbprint string `json:"bindingSnapshotThumbprint,omitempty"`
 	IISSiteName               string `json:"iisSiteName,omitempty"`
@@ -24,11 +24,11 @@ type InstallRecord struct {
 
 // IISConfig configures IIS HTTPS binding for Windows server identity installs.
 type IISConfig struct {
-	SiteName     string
-	BindingHost  string
-	BindingPort  int
-	IPAddress    string
-	SNI          bool
+	SiteName    string
+	BindingHost string
+	BindingPort int
+	IPAddress   string
+	SNI         bool
 }
 
 // CommandExecutor runs external commands (test injection for Windows installers).
@@ -38,9 +38,9 @@ type CommandExecutor interface {
 
 // InstallOptions configures a trust-store install attempt.
 type InstallOptions struct {
-	AssignmentID   string
-	DeploymentID   string
-	TrustStoreType string
+	AssignmentID      string
+	DeploymentID      string
+	TrustStoreType    string
 	MaterialType      string
 	ChainPem          string
 	PrivateKeyPem     string
@@ -65,13 +65,13 @@ type InstallOptions struct {
 	UseOpensslCa      bool
 	NodeFlags         []string
 	PreferOsStore     bool
-	DbUser            string
+	DBUser            string
 	RacfProfile       string
-	SystemId          string
+	SystemID          string
 	GatewayMode       bool
 	Executor          CommandExecutor
 	// Metadata is populated by installers that capture runtime rollback fields.
-	Metadata          *InstallRecord
+	Metadata *InstallRecord
 }
 
 // RemoveOptions configures a trust-store removal attempt.

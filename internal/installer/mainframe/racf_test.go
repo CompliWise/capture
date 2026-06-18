@@ -1,11 +1,12 @@
 package mainframe
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
-	"github.com/bluewave-labs/capture/internal/installer"
-	"github.com/bluewave-labs/capture/internal/installer/testfixtures"
+	"github.com/compliwise/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer/testfixtures"
 )
 
 type mockCommandExecutor struct {
@@ -74,7 +75,7 @@ func TestInstallRunsRacfTrustCommand(t *testing.T) {
 		ChainPem:       testfixtures.SampleTrustAnchorPEM,
 		Thumbprint:     thumbprint,
 		RacfProfile:    "COMPLIUSR",
-		SystemId:       "SYS1",
+		SystemID:       "SYS1",
 		Executor:       executor,
 		Metadata:       metadata,
 	})
@@ -103,7 +104,7 @@ func TestInstallGatewayModeSkipsRacf(t *testing.T) {
 		MaterialType:   "trust_anchor",
 		ChainPem:       testfixtures.SampleTrustAnchorPEM,
 		RacfProfile:    "COMPLIUSR",
-		SystemId:       "SYS1",
+		SystemID:       "SYS1",
 		GatewayMode:    true,
 		Executor:       executor,
 	})
@@ -126,8 +127,8 @@ func TestInstallRequiresRacfProfile(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for missing racfProfile")
 	}
-	coded, ok := err.(*installer.CodedError)
-	if !ok || coded.Code != "ERR_INVALID_CONFIG" {
+	var coded *installer.CodedError
+	if !errors.As(err, &coded) || coded.Code != "ERR_INVALID_CONFIG" {
 		t.Fatalf("expected ERR_INVALID_CONFIG, got %v", err)
 	}
 }

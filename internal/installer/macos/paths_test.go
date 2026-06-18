@@ -3,7 +3,7 @@ package macos
 import (
 	"testing"
 
-	"github.com/bluewave-labs/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer"
 )
 
 func TestResolveKeychainPathDefault(t *testing.T) {

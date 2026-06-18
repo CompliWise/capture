@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/bluewave-labs/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer"
 )
 
 func installTrustAnchor(opts installer.InstallOptions, exec installer.CommandExecutor) (string, error) {
@@ -29,10 +29,11 @@ func installTrustAnchor(opts installer.InstallOptions, exec installer.CommandExe
 	)
 
 	output, runErr := runPowerShell(exec, script)
-	logLines := []string{
+	logLines := make([]string, 0, 3)
+	logLines = append(logLines,
 		fmt.Sprintf("Import-Certificate -CertStoreLocation %s", storePath),
 		strings.TrimSpace(string(output)),
-	}
+	)
 	if runErr != nil {
 		return strings.Join(logLines, "\n"), mapPowerShellError(output, runErr, "")
 	}

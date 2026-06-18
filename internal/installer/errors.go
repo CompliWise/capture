@@ -1,6 +1,9 @@
 package installer
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 // CodedError carries a deployment report error code and operator-safe message.
 type CodedError struct {
@@ -28,7 +31,8 @@ func ErrorCode(err error) string {
 	if err == nil {
 		return ""
 	}
-	if coded, ok := err.(*CodedError); ok && coded.Code != "" {
+	var coded *CodedError
+	if errors.As(err, &coded) && coded.Code != "" {
 		return coded.Code
 	}
 	return "ERR_INSTALL_FAILED"

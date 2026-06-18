@@ -3,7 +3,7 @@ package macos
 import (
 	"os/exec"
 
-	"github.com/bluewave-labs/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer"
 )
 
 type defaultExecutor struct{}

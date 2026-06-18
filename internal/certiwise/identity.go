@@ -5,7 +5,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/bluewave-labs/capture/internal/metric"
+	"github.com/compliwise/capture/internal/metric"
 	"github.com/shirou/gopsutil/v4/host"
 )
 

@@ -1,4 +1,4 @@
-module github.com/bluewave-labs/capture
+module github.com/compliwise/capture
 
 go 1.25.0
 

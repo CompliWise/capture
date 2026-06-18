@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bluewave-labs/capture/internal/certiwise/store"
+	"github.com/compliwise/capture/internal/certiwise/store"
 )
 
 const (
@@ -34,50 +34,50 @@ const (
 
 // Config holds CompliWise control-plane settings for the capture agent.
 type Config struct {
-	APIURL            string
-	OrgID             string
-	AgentID           string
-	AgentToken        string
-	EnrollmentCode    string
-	HeartbeatInterval time.Duration
-	PollInterval      time.Duration
-	ProxyURL          string
-	MtlsCertPath      string
-	MtlsKeyPath       string
-	MtlsCAPath        string
-	APICABundlePath   string
-	APIPinSHA256      string
-	InsecureSkipVerify bool
-	AgentEnvPath      string
-	DiscoveryEnabled  bool
-	DiscoveryInterval time.Duration
-	DiscoveryPemPaths []string
-	DiscoveryMaxItems int
-	DiscoveryPostDeploy bool
-	DiscoveryTLSEnabled bool
-	DiscoveryTLSPorts []int
-	DiscoveryTLSPortsExplicit bool
-	DiscoveryTLSPortRange string
-	DiscoveryTLSHosts []string
-	DiscoveryTLSTimeout time.Duration
-	DiscoveryTLSInsecure bool
-	DiscoveryJavaEnabled bool
-	DiscoveryJavaMaxJvms int
+	APIURL                     string
+	OrgID                      string
+	AgentID                    string
+	AgentToken                 string
+	EnrollmentCode             string
+	HeartbeatInterval          time.Duration
+	PollInterval               time.Duration
+	ProxyURL                   string
+	MtlsCertPath               string
+	MtlsKeyPath                string
+	MtlsCAPath                 string
+	APICABundlePath            string
+	APIPinSHA256               string
+	InsecureSkipVerify         bool
+	AgentEnvPath               string
+	DiscoveryEnabled           bool
+	DiscoveryInterval          time.Duration
+	DiscoveryPemPaths          []string
+	DiscoveryMaxItems          int
+	DiscoveryPostDeploy        bool
+	DiscoveryTLSEnabled        bool
+	DiscoveryTLSPorts          []int
+	DiscoveryTLSPortsExplicit  bool
+	DiscoveryTLSPortRange      string
+	DiscoveryTLSHosts          []string
+	DiscoveryTLSTimeout        time.Duration
+	DiscoveryTLSInsecure       bool
+	DiscoveryJavaEnabled       bool
+	DiscoveryJavaMaxJvms       int
 	DiscoveryJavaStorePassword string
-	DiscoveryWindowsEnabled bool
-	DiscoveryWindowsIncludeMy bool
-	ProbeEnabled      bool
-	ProbeInterval     time.Duration
-	ProbeTimeout      time.Duration
-	ProbeTargets      []string
-	ProbeInsecure     bool
-	ProbePostDeploy   bool
-	SyntheticEnabled  bool
-	SyntheticSyncInterval time.Duration
-	SyntheticMaxWorkers int
-	SyntheticUserAgent string
-	TelemetryBatchSize int
-	TelemetryFlushSeconds int
+	DiscoveryWindowsEnabled    bool
+	DiscoveryWindowsIncludeMy  bool
+	ProbeEnabled               bool
+	ProbeInterval              time.Duration
+	ProbeTimeout               time.Duration
+	ProbeTargets               []string
+	ProbeInsecure              bool
+	ProbePostDeploy            bool
+	SyntheticEnabled           bool
+	SyntheticSyncInterval      time.Duration
+	SyntheticMaxWorkers        int
+	SyntheticUserAgent         string
+	TelemetryBatchSize         int
+	TelemetryFlushSeconds      int
 }
 
 // Load reads CompliWise settings from the persisted env file and process environment.
@@ -103,48 +103,48 @@ func Load() (*Config, error) {
 	}
 
 	cfg := &Config{
-		APIURL:             apiURL,
-		OrgID:              strings.TrimSpace(merged["COMPLIWISE_ORG_ID"]),
-		AgentID:            strings.TrimSpace(merged["COMPLIWISE_AGENT_ID"]),
-		AgentToken:         strings.TrimSpace(merged["COMPLIWISE_AGENT_TOKEN"]),
-		EnrollmentCode:     strings.TrimSpace(merged["COMPLIWISE_ENROLLMENT_CODE"]),
-		HeartbeatInterval:  durationFromEnv(merged, "COMPLIWISE_HEARTBEAT_INTERVAL", defaultHeartbeatIntervalSecs),
-		PollInterval:       durationFromEnv(merged, "COMPLIWISE_POLL_INTERVAL", defaultPollIntervalSecs),
-		ProxyURL:           strings.TrimSpace(merged["COMPLIWISE_PROXY_URL"]),
-		MtlsCertPath:       strings.TrimSpace(merged["COMPLIWISE_MTLS_CERT"]),
-		MtlsKeyPath:        strings.TrimSpace(merged["COMPLIWISE_MTLS_KEY"]),
-		MtlsCAPath:         strings.TrimSpace(merged["COMPLIWISE_MTLS_CA"]),
-		APICABundlePath:    strings.TrimSpace(merged["COMPLIWISE_API_CA_BUNDLE"]),
-		APIPinSHA256:       strings.TrimSpace(merged["COMPLIWISE_API_PIN_SHA256"]),
-		InsecureSkipVerify: strings.EqualFold(merged["COMPLIWISE_INSECURE_SKIP_VERIFY"], "true"),
-		AgentEnvPath:       envPath,
-		DiscoveryEnabled:   discoveryEnabledFromEnv(merged),
-		DiscoveryInterval:  discoveryIntervalFromEnv(merged),
-		DiscoveryPemPaths:  discoveryPemPathsFromEnv(merged),
-		DiscoveryMaxItems:   discoveryMaxItemsFromEnv(merged),
-		DiscoveryPostDeploy: discoveryPostDeployFromEnv(merged),
-		DiscoveryTLSEnabled: discoveryTLSEnabledFromEnv(merged),
-		DiscoveryTLSPorts:   discoveryTLSPortsFromEnv(merged),
-		DiscoveryTLSPortsExplicit: strings.TrimSpace(merged["COMPLIWISE_DISCOVERY_TLS_PORTS"]) != "",
-		DiscoveryTLSPortRange: strings.TrimSpace(merged["COMPLIWISE_DISCOVERY_TLS_PORT_RANGE"]),
-		DiscoveryTLSHosts:     discoveryTLSHostsFromEnv(merged),
-		DiscoveryTLSTimeout:   discoveryTLSTimeoutFromEnv(merged),
-		DiscoveryTLSInsecure:  discoveryTLSInsecureFromEnv(merged),
-		DiscoveryJavaEnabled:  discoveryJavaEnabledFromEnv(merged),
-		DiscoveryJavaMaxJvms:  discoveryJavaMaxJvmsFromEnv(merged),
+		APIURL:                     apiURL,
+		OrgID:                      strings.TrimSpace(merged["COMPLIWISE_ORG_ID"]),
+		AgentID:                    strings.TrimSpace(merged["COMPLIWISE_AGENT_ID"]),
+		AgentToken:                 strings.TrimSpace(merged["COMPLIWISE_AGENT_TOKEN"]),
+		EnrollmentCode:             strings.TrimSpace(merged["COMPLIWISE_ENROLLMENT_CODE"]),
+		HeartbeatInterval:          durationFromEnv(merged, "COMPLIWISE_HEARTBEAT_INTERVAL", defaultHeartbeatIntervalSecs),
+		PollInterval:               durationFromEnv(merged, "COMPLIWISE_POLL_INTERVAL", defaultPollIntervalSecs),
+		ProxyURL:                   strings.TrimSpace(merged["COMPLIWISE_PROXY_URL"]),
+		MtlsCertPath:               strings.TrimSpace(merged["COMPLIWISE_MTLS_CERT"]),
+		MtlsKeyPath:                strings.TrimSpace(merged["COMPLIWISE_MTLS_KEY"]),
+		MtlsCAPath:                 strings.TrimSpace(merged["COMPLIWISE_MTLS_CA"]),
+		APICABundlePath:            strings.TrimSpace(merged["COMPLIWISE_API_CA_BUNDLE"]),
+		APIPinSHA256:               strings.TrimSpace(merged["COMPLIWISE_API_PIN_SHA256"]),
+		InsecureSkipVerify:         strings.EqualFold(merged["COMPLIWISE_INSECURE_SKIP_VERIFY"], "true"),
+		AgentEnvPath:               envPath,
+		DiscoveryEnabled:           discoveryEnabledFromEnv(merged),
+		DiscoveryInterval:          discoveryIntervalFromEnv(merged),
+		DiscoveryPemPaths:          discoveryPemPathsFromEnv(merged),
+		DiscoveryMaxItems:          discoveryMaxItemsFromEnv(merged),
+		DiscoveryPostDeploy:        discoveryPostDeployFromEnv(merged),
+		DiscoveryTLSEnabled:        discoveryTLSEnabledFromEnv(merged),
+		DiscoveryTLSPorts:          discoveryTLSPortsFromEnv(merged),
+		DiscoveryTLSPortsExplicit:  strings.TrimSpace(merged["COMPLIWISE_DISCOVERY_TLS_PORTS"]) != "",
+		DiscoveryTLSPortRange:      strings.TrimSpace(merged["COMPLIWISE_DISCOVERY_TLS_PORT_RANGE"]),
+		DiscoveryTLSHosts:          discoveryTLSHostsFromEnv(merged),
+		DiscoveryTLSTimeout:        discoveryTLSTimeoutFromEnv(merged),
+		DiscoveryTLSInsecure:       discoveryTLSInsecureFromEnv(merged),
+		DiscoveryJavaEnabled:       discoveryJavaEnabledFromEnv(merged),
+		DiscoveryJavaMaxJvms:       discoveryJavaMaxJvmsFromEnv(merged),
 		DiscoveryJavaStorePassword: strings.TrimSpace(merged["COMPLIWISE_DISCOVERY_JAVA_STORE_PASSWORD"]),
-		DiscoveryWindowsEnabled: discoveryWindowsEnabledFromEnv(merged),
-		DiscoveryWindowsIncludeMy: discoveryWindowsIncludeMyFromEnv(merged),
-		ProbeEnabled:        probeEnabledFromEnv(merged),
-		ProbeInterval:       probeIntervalFromEnv(merged),
-		ProbeTimeout:        probeTimeoutFromEnv(merged),
-		ProbeTargets:        probeTargetsFromEnv(merged),
-		ProbeInsecure:       probeInsecureFromEnv(merged),
-		ProbePostDeploy:     probePostDeployFromEnv(merged),
-		SyntheticEnabled:    syntheticEnabledFromEnv(merged),
-		SyntheticSyncInterval: syntheticSyncIntervalFromEnv(merged),
-		SyntheticMaxWorkers: syntheticMaxWorkersFromEnv(merged),
-		SyntheticUserAgent:  syntheticUserAgentFromEnv(merged),
+		DiscoveryWindowsEnabled:    discoveryWindowsEnabledFromEnv(merged),
+		DiscoveryWindowsIncludeMy:  discoveryWindowsIncludeMyFromEnv(merged),
+		ProbeEnabled:               probeEnabledFromEnv(merged),
+		ProbeInterval:              probeIntervalFromEnv(merged),
+		ProbeTimeout:               probeTimeoutFromEnv(merged),
+		ProbeTargets:               probeTargetsFromEnv(merged),
+		ProbeInsecure:              probeInsecureFromEnv(merged),
+		ProbePostDeploy:            probePostDeployFromEnv(merged),
+		SyntheticEnabled:           syntheticEnabledFromEnv(merged),
+		SyntheticSyncInterval:      syntheticSyncIntervalFromEnv(merged),
+		SyntheticMaxWorkers:        syntheticMaxWorkersFromEnv(merged),
+		SyntheticUserAgent:         syntheticUserAgentFromEnv(merged),
 	}
 
 	return cfg, nil

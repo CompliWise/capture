@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/bluewave-labs/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer"
 )
 
 // Installer implements macos_keychain_system for trust anchors.

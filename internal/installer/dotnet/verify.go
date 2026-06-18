@@ -3,7 +3,7 @@ package dotnet
 import (
 	"strings"
 
-	"github.com/bluewave-labs/capture/internal/installer/linux"
+	"github.com/compliwise/capture/internal/installer/linux"
 )
 
 var verifyRunner = defaultVerifyRunner

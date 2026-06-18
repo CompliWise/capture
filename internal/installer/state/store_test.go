@@ -3,7 +3,7 @@ package state
 import (
 	"testing"
 
-	"github.com/bluewave-labs/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer"
 )
 
 func TestStoreUpsertDelete(t *testing.T) {

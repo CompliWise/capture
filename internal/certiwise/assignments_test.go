@@ -32,9 +32,9 @@ func TestPullAssignmentsConditional304(t *testing.T) {
 		}
 
 		body := AssignmentsPullResponse{
-			Etag:         "sha256:first",
-			ConfigEtag:   "sha256:cfg",
-			Assignments:  []AssignmentPullItem{},
+			Etag:        "sha256:first",
+			ConfigEtag:  "sha256:cfg",
+			Assignments: []AssignmentPullItem{},
 		}
 		w.Header().Set("ETag", `W/"sha256:unchanged"`)
 		w.Header().Set("Cache-Control", "private, no-cache")

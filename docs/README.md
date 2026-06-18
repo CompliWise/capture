@@ -47,4 +47,4 @@ sequenceDiagram
 
 ## Systemd service
 
-Systemd instructions are moved to [README.md](https://github.com/bluewave-labs/capture?tab=readme-ov-file#linux-systemd-service)
+Systemd instructions are moved to [README.md](https://github.com/compliwise/capture?tab=readme-ov-file#linux-systemd-service)

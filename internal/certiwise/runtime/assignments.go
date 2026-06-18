@@ -10,17 +10,17 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
-	"github.com/bluewave-labs/capture/internal/installer"
-	"github.com/bluewave-labs/capture/internal/installer/database"
-	"github.com/bluewave-labs/capture/internal/installer/dotnet"
-	"github.com/bluewave-labs/capture/internal/installer/java"
-	"github.com/bluewave-labs/capture/internal/installer/linux"
-	"github.com/bluewave-labs/capture/internal/installer/macos"
-	"github.com/bluewave-labs/capture/internal/installer/mainframe"
-	"github.com/bluewave-labs/capture/internal/installer/node"
-	"github.com/bluewave-labs/capture/internal/installer/python"
-	installerstate "github.com/bluewave-labs/capture/internal/installer/state"
+	"github.com/compliwise/capture/internal/certiwise"
+	"github.com/compliwise/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer/database"
+	"github.com/compliwise/capture/internal/installer/dotnet"
+	"github.com/compliwise/capture/internal/installer/java"
+	"github.com/compliwise/capture/internal/installer/linux"
+	"github.com/compliwise/capture/internal/installer/macos"
+	"github.com/compliwise/capture/internal/installer/mainframe"
+	"github.com/compliwise/capture/internal/installer/node"
+	"github.com/compliwise/capture/internal/installer/python"
+	installerstate "github.com/compliwise/capture/internal/installer/state"
 )
 
 var (
@@ -175,9 +175,9 @@ func processAssignment(
 		NodeFlags:         assignment.Config.NodeFlags,
 		PreferOsStore:     assignment.Config.PreferOsStore,
 		KeychainPath:      assignment.Config.KeychainPath,
-		DbUser:            assignment.Config.DbUser,
+		DBUser:            assignment.Config.DBUser,
 		RacfProfile:       assignment.Config.RacfProfile,
-		SystemId:          assignment.Config.SystemId,
+		SystemID:          assignment.Config.SystemID,
 		GatewayMode:       assignment.Config.GatewayMode,
 		IIS:               mapIISConfig(assignment.Config.IIS),
 		Metadata:          &installer.InstallRecord{},
@@ -339,7 +339,7 @@ func buildInstallRecord(
 			assignment.TrustStoreType,
 			opts.TrustStorePath,
 			opts.CertFileName,
-			opts.DbUser,
+			opts.DBUser,
 		); err == nil {
 			record.CertPath = path
 		}
@@ -442,4 +442,3 @@ func mergeInstallMetadata(base, runtime installer.InstallRecord) installer.Insta
 	}
 	return base
 }
-

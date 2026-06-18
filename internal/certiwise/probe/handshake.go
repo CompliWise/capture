@@ -76,6 +76,28 @@ func chainThumbprints(certs []*x509.Certificate) []string {
 	return out
 }
 
+func chainSubjectCNs(certs []*x509.Certificate) []string {
+	if len(certs) == 0 {
+		return nil
+	}
+
+	out := make([]string, 0, len(certs))
+	for _, cert := range certs {
+		if cert == nil {
+			continue
+		}
+		cn := strings.TrimSpace(cert.Subject.CommonName)
+		if cn == "" {
+			cn = strings.TrimSpace(cert.Subject.String())
+		}
+		if len(cn) > 253 {
+			cn = cn[:253]
+		}
+		out = append(out, cn)
+	}
+	return out
+}
+
 func tlsVersionName(version uint16) string {
 	switch version {
 	case tls.VersionTLS10:

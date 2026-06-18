@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bluewave-labs/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer"
 )
 
 const postgresPermissionMessage = "Insufficient privileges to set PostgreSQL root.crt ownership. Run the agent as root or configure dbUser to the agent user."

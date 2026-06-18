@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bluewave-labs/capture/internal/certiwise"
-	cwconfig "github.com/bluewave-labs/capture/internal/certiwise/config"
+	"github.com/compliwise/capture/internal/certiwise"
+	cwconfig "github.com/compliwise/capture/internal/certiwise/config"
 )
 
 // Runner manages per-monitor check goroutines with a worker pool cap.
@@ -60,7 +60,7 @@ func (r *Runner) Sync(
 		}
 		monitorCtx, monitorCancel := context.WithCancel(ctx)
 		r.active[monitor.ID] = monitorCancel
-		go r.runMonitor(monitorCtx, client, cfg, monitor, userAgent)
+		go r.runMonitor(monitorCtx, client, monitor, userAgent)
 	}
 
 	for id, cancel := range r.active {
@@ -89,7 +89,6 @@ func (r *Runner) StopAll() {
 func (r *Runner) runMonitor(
 	ctx context.Context,
 	client *certiwise.Client,
-	cfg *cwconfig.Config,
 	monitor Monitor,
 	userAgent string,
 ) {

@@ -5,8 +5,8 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/bluewave-labs/capture/internal/system"
-	"github.com/bluewave-labs/capture/test"
+	"github.com/compliwise/capture/internal/system"
+	"github.com/compliwise/capture/test"
 )
 
 // TestCPUTemperature tests the functionality of retrieving the CPU temperature.

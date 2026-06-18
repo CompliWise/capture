@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/bluewave-labs/capture/internal/installer"
+	"github.com/compliwise/capture/internal/installer"
 )
 
 func ensurePlatform(opts installer.InstallOptions) error {

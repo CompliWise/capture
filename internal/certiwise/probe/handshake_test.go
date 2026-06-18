@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	cwconfig "github.com/bluewave-labs/capture/internal/certiwise/config"
+	cwconfig "github.com/compliwise/capture/internal/certiwise/config"
 )
 
 func TestProbeHandshakeCapturesChainThumbprints(t *testing.T) {
