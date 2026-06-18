@@ -7,9 +7,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/bluewave-labs/capture/internal/config"
-	"github.com/bluewave-labs/capture/internal/server"
-	"github.com/bluewave-labs/capture/internal/server/handler"
+	cwconfig "github.com/compliwise/capture/internal/certiwise/config"
+	"github.com/compliwise/capture/internal/certiwise/runtime"
+	"github.com/compliwise/capture/internal/config"
+	"github.com/compliwise/capture/internal/server"
+	"github.com/compliwise/capture/internal/server/handler"
 )
 
 // Application configuration variable that holds the settings.
@@ -59,7 +61,16 @@ func main() {
 	srv := server.NewServer(appConfig, nil, &handler.CaptureMeta{
 		Version: Version,
 	})
-	log.Println("WARNING: Remember to add http://" + server.GetLocalIP() + ":" + appConfig.Port + "/api/v1/metrics to your Checkmate Infrastructure Dashboard. Without this endpoint, system metrics will not be displayed.")
+	log.Println("WARNING: Remember to add http://" + server.GetLocalIP() + ":" + appConfig.Port + "/api/v1/metrics to your Compliwise Infrastructure Dashboard. Without this endpoint, system metrics will not be displayed.")
+
+	certiwiseCfg, err := cwconfig.Load()
+	if err != nil {
+		log.Fatalf("certiwise: load config: %v", err)
+	}
+	if certiwiseCfg != nil {
+		log.Printf("certiwise: control plane enabled (api=%s, heartbeat every %s)", certiwiseCfg.APIURL, certiwiseCfg.HeartbeatInterval)
+		runtime.Start(certiwiseCfg, Version)
+	}
 
 	srv.Serve()
 

@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/bluewave-labs/capture/test"
+	"github.com/compliwise/capture/test"
 )
 
 // DiskEnv holds all provisioned resources for a single filesystem test case

@@ -3,7 +3,7 @@ package integration
 import (
 	"testing"
 
-	"github.com/bluewave-labs/capture/internal/system"
+	"github.com/compliwise/capture/internal/system"
 )
 
 // TestPrettyName tests the functionality of retrieving the pretty name of the system.

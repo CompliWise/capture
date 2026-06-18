@@ -19,7 +19,7 @@ You must follow these steps to ensure a smooth release process.
     git push origin <version>
     ```
 
-3. [Create a PR](https://github.com/bluewave-labs/capture/compare/main...develop) for merging `develop` into `main`. Merge it with 'Merge Commit' option, do not squash or rebase.
+3. [Create a PR](https://github.com/compliwise/capture/compare/main...develop) for merging `develop` into `main`. Merge it with 'Merge Commit' option, do not squash or rebase.
 
 4. Update the `CHANGELOG.md` file with the new version details.
 

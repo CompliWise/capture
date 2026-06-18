@@ -3,8 +3,8 @@ package integration
 import (
 	"testing"
 
-	"github.com/bluewave-labs/capture/internal/metric"
-	"github.com/bluewave-labs/capture/test"
+	"github.com/compliwise/capture/internal/metric"
+	"github.com/compliwise/capture/test"
 	"github.com/shirou/gopsutil/v4/disk"
 )
 

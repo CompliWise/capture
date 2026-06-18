@@ -6,7 +6,7 @@ Thank you for your interest in contributing to Capture! Whether you're fixing bu
 
 - **Star the Repository**: If you like the project, give it a star to show your support.
 - **Join the Community**: Connect with us on [Discord](https://discord.com/invite/NAb6H3UTjK) for discussions and support.
-- **Explore Issues**: Check out [open issues](https://github.com/bluewave-labs/capture/issues) and look for those labeled `good first issue` if you're new.
+- **Explore Issues**: Check out [open issues](https://github.com/compliwise/capture/issues) and look for those labeled `good first issue` if you're new.
 
 ## Reporting Bugs
 
@@ -30,14 +30,14 @@ Thank you for your interest in contributing to Capture! Whether you're fixing bu
 Read a detailed structure of Capture if you would like to deep dive into the architecture.
 
 - [Architecture Overview](docs/README.md#high-level-overview)
-- [Capture DeepWiki Page](https://deepwiki.com/bluewave-labs/capture)
+- [Capture DeepWiki Page](https://deepwiki.com/compliwise/capture)
 
 ## Development Setup
 
 1. **Clone the Repository**:
 
    ```bash
-   git clone https://github.com/bluewave-labs/capture.git
+   git clone https://github.com/compliwise/capture.git
    cd capture
    ```
 

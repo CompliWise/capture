@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/bluewave-labs/capture/internal/metric"
+	"github.com/compliwise/capture/internal/metric"
 	"github.com/gin-gonic/gin"
 )
 

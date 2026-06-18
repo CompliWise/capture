@@ -1,17 +1,17 @@
 <!-- Disable markdownlint rule MD041 (first line in file should be a top-level heading) since we have badges at the top and h1. -->
 <!-- markdownlint-disable MD041 -->
-![github-license](https://img.shields.io/github/license/bluewave-labs/capture)
-![github-repo-size](https://img.shields.io/github/repo-size/bluewave-labs/capture)
-![github-commit-activity](https://img.shields.io/github/commit-activity/w/bluewave-labs/capture)
-![github-last-commit-data](https://img.shields.io/github/last-commit/bluewave-labs/capture)
-![github-languages](https://img.shields.io/github/languages/top/bluewave-labs/capture)
-![github-issues-and-prs](https://img.shields.io/github/issues-pr/bluewave-labs/capture)
-![github-issues](https://img.shields.io/github/issues/bluewave-labs/capture)
-[![go-reference](https://pkg.go.dev/badge/github.com/bluewave-labs/capture.svg)](https://pkg.go.dev/github.com/bluewave-labs/capture)
-[![github-actions-go](https://github.com/bluewave-labs/capture/actions/workflows/go.yml/badge.svg)](https://github.com/bluewave-labs/capture/actions/workflows/go.yml)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/bluewave-labs/capture)
+![github-license](https://img.shields.io/github/license/compliwise/capture)
+![github-repo-size](https://img.shields.io/github/repo-size/compliwise/capture)
+![github-commit-activity](https://img.shields.io/github/commit-activity/w/compliwise/capture)
+![github-last-commit-data](https://img.shields.io/github/last-commit/compliwise/capture)
+![github-languages](https://img.shields.io/github/languages/top/compliwise/capture)
+![github-issues-and-prs](https://img.shields.io/github/issues-pr/compliwise/capture)
+![github-issues](https://img.shields.io/github/issues/compliwise/capture)
+[![go-reference](https://pkg.go.dev/badge/github.com/compliwise/capture.svg)](https://pkg.go.dev/github.com/compliwise/capture)
+[![github-actions-go](https://github.com/compliwise/capture/actions/workflows/go.yml/badge.svg)](https://github.com/compliwise/capture/actions/workflows/go.yml)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/compliwise/capture)
 
-<h1 align="center"><a href="https://bluewavelabs.ca" target="_blank">Capture</a></h1>
+<h1 align="center"><a href="https://compliwise.ca" target="_blank">Capture</a></h1>
 
 <p align="center"><strong>An open source hardware monitoring agent</strong></p>
 
@@ -26,7 +26,9 @@ Capture is a hardware monitoring agent that collects hardware information from t
   - [Helm](#helm)
   - [System Installation](#system-installation)
   - [Linux Systemd Service](#linux-systemd-service)
+    - [Manual setup](#manual-setup)
   - [macOS Launchd Service](#macos-launchd-service)
+    - [Manual setup](#manual-setup-1)
   - [Windows Service](#windows-service)
   - [Reverse Proxy and SSL](#reverse-proxy-and-ssl)
     - [Caddy](#caddy)
@@ -60,7 +62,7 @@ docker run -d \
     -v /etc/os-release:/etc/os-release:ro \
     -p 59232:59232 \
     -e API_SECRET=your-secret-key \
-    ghcr.io/bluewave-labs/capture:latest
+    ghcr.io/compliwise/capture:latest
 ```
 
 ## Quick Start (Docker Compose)
@@ -69,7 +71,7 @@ docker run -d \
 services:
   # Capture service
   capture:
-    image: ghcr.io/bluewave-labs/capture:latest
+    image: ghcr.io/compliwise/capture:latest
     container_name: capture
     restart: unless-stopped
     ports:
@@ -110,7 +112,7 @@ docker run -d \
     -v /etc/os-release:/etc/os-release:ro \
     -p 59232:59232 \
     -e API_SECRET=your-secret-key \
-    ghcr.io/bluewave-labs/capture:latest
+    ghcr.io/compliwise/capture:latest
 ```
 
 Or build locally:
@@ -151,18 +153,18 @@ For detailed instructions, refer to the [Helm Installation Guide](./deployment/h
 
 Choose one of these methods:
 
-1. **Pre-built Binaries**: Download from [GitHub Releases](https://github.com/bluewave-labs/capture/releases)
+1. **Pre-built Binaries**: Download from [GitHub Releases](https://github.com/compliwise/capture/releases)
 
 2. **Go Package**:
 
    ```shell
-   go install github.com/bluewave-labs/capture/cmd/capture@latest
+   go install github.com/compliwise/capture/cmd/capture@latest
    ```
 
 3. **Build from Source**:
 
    ```shell
-   git clone git@github.com:bluewave-labs/capture
+   git clone git@github.com:compliwise/capture
    cd capture
    just build   # or: go build -o dist/capture ./cmd/capture/
    ```
@@ -176,7 +178,7 @@ An install script is provided at [`deployment/linux/install.sh`](./deployment/li
 1. Download and run in one step:
 
     ```shell
-    curl -fsSL https://raw.githubusercontent.com/bluewave-labs/capture/main/deployment/linux/install.sh | sudo bash
+    curl -fsSL https://raw.githubusercontent.com/compliwise/capture/main/deployment/linux/install.sh | sudo bash
     ```
 
     The script will prompt you for `API_SECRET` if it is not supplied as an argument.
@@ -184,14 +186,14 @@ An install script is provided at [`deployment/linux/install.sh`](./deployment/li
 2. Supply options inline if preferred:
 
     ```shell
-    curl -fsSL https://raw.githubusercontent.com/bluewave-labs/capture/main/deployment/linux/install.sh \
+    curl -fsSL https://raw.githubusercontent.com/compliwise/capture/main/deployment/linux/install.sh \
         | sudo bash -s -- --api-secret "your-secret-key"
     ```
 
 3. All available options:
 
     ```shell
-    curl -fsSL https://raw.githubusercontent.com/bluewave-labs/capture/main/deployment/linux/install.sh \
+    curl -fsSL https://raw.githubusercontent.com/compliwise/capture/main/deployment/linux/install.sh \
         | sudo bash -s -- \
             --api-secret "your-secret-key" \
             --port 59232 \
@@ -202,7 +204,7 @@ An install script is provided at [`deployment/linux/install.sh`](./deployment/li
     Or download the script first and run it locally:
 
     ```shell
-    curl -fsSL -o install.sh https://raw.githubusercontent.com/bluewave-labs/capture/main/deployment/linux/install.sh
+    curl -fsSL -o install.sh https://raw.githubusercontent.com/compliwise/capture/main/deployment/linux/install.sh
     sudo bash install.sh --api-secret "your-secret-key"
     ```
 
@@ -264,7 +266,7 @@ An install script is provided at [`deployment/macos/install.sh`](./deployment/ma
 1. Download and run in one step:
 
     ```shell
-    curl -fsSL https://raw.githubusercontent.com/bluewave-labs/capture/main/deployment/macos/install.sh | sudo bash
+    curl -fsSL https://raw.githubusercontent.com/compliwise/capture/main/deployment/macos/install.sh | sudo bash
     ```
 
     The script will prompt you for `API_SECRET` if it is not supplied as an argument.
@@ -272,25 +274,25 @@ An install script is provided at [`deployment/macos/install.sh`](./deployment/ma
 2. Supply options inline if preferred:
 
     ```shell
-    curl -fsSL https://raw.githubusercontent.com/bluewave-labs/capture/main/deployment/macos/install.sh \
+    curl -fsSL https://raw.githubusercontent.com/compliwise/capture/main/deployment/macos/install.sh \
         | sudo bash -s -- --api-secret "your-secret-key"
     ```
 
 3. All available options:
 
     ```shell
-    curl -fsSL https://raw.githubusercontent.com/bluewave-labs/capture/main/deployment/macos/install.sh \
+    curl -fsSL https://raw.githubusercontent.com/compliwise/capture/main/deployment/macos/install.sh \
         | sudo bash -s -- \
             --api-secret "your-secret-key" \
             --port 59232 \
             --install-dir /usr/local/bin \
-            --service-name com.bluewavelabs.capture
+            --service-name com.compliwise.capture
     ```
 
     Or download the script first and run it locally:
 
     ```shell
-    curl -fsSL -o install.sh https://raw.githubusercontent.com/bluewave-labs/capture/main/deployment/macos/install.sh
+    curl -fsSL -o install.sh https://raw.githubusercontent.com/compliwise/capture/main/deployment/macos/install.sh
     sudo bash install.sh --api-secret "your-secret-key"
     ```
 
@@ -301,15 +303,15 @@ An install script is provided at [`deployment/macos/install.sh`](./deployment/ma
     | `--api-secret`   | Authentication key (required)            | *(prompted)*                 |
     | `--port`         | Port the agent listens on                | `59232`                      |
     | `--install-dir`  | Directory to install the binary          | `/usr/local/bin`             |
-    | `--service-name` | launchd label and plist filename         | `com.bluewavelabs.capture`   |
+    | `--service-name` | launchd label and plist filename         | `com.compliwise.capture`   |
 
 5. After installation, manage the service with `launchctl`:
 
     ```shell
-    sudo launchctl load /Library/LaunchDaemons/com.bluewavelabs.capture.plist
-    sudo launchctl start com.bluewavelabs.capture
-    sudo launchctl list | grep com.bluewavelabs.capture
-    tail -f /var/log/com.bluewavelabs.capture.log
+    sudo launchctl load /Library/LaunchDaemons/com.compliwise.capture.plist
+    sudo launchctl start com.compliwise.capture
+    sudo launchctl list | grep com.compliwise.capture
+    tail -f /var/log/com.compliwise.capture.log
     ```
 
 <!-- markdownlint-disable MD024 -->
@@ -326,22 +328,22 @@ If you prefer to configure the service manually, a template plist is provided at
 2. Copy it to the launchd daemon directory and set the required permissions:
 
     ```shell
-    cp deployment/macos/capture.plist /Library/LaunchDaemons/com.bluewavelabs.capture.plist
-    chown root:wheel /Library/LaunchDaemons/com.bluewavelabs.capture.plist
-    chmod 644 /Library/LaunchDaemons/com.bluewavelabs.capture.plist
+    cp deployment/macos/capture.plist /Library/LaunchDaemons/com.compliwise.capture.plist
+    chown root:wheel /Library/LaunchDaemons/com.compliwise.capture.plist
+    chmod 644 /Library/LaunchDaemons/com.compliwise.capture.plist
     ```
 
 3. Load and start the service:
 
     ```shell
-    sudo launchctl load /Library/LaunchDaemons/com.bluewavelabs.capture.plist
-    sudo launchctl start com.bluewavelabs.capture
+    sudo launchctl load /Library/LaunchDaemons/com.compliwise.capture.plist
+    sudo launchctl start com.compliwise.capture
     ```
 
 4. Verify the service is running:
 
     ```shell
-    sudo launchctl list | grep com.bluewavelabs.capture
+    sudo launchctl list | grep com.compliwise.capture
     ```
 
 ### Windows Service
@@ -354,7 +356,7 @@ A PowerShell install script is provided at [`deployment/windows/install.ps1`](./
 
     ```powershell
     Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-    Invoke-RestMethod https://raw.githubusercontent.com/bluewave-labs/capture/main/deployment/windows/install.ps1 | Invoke-Expression
+    Invoke-RestMethod https://raw.githubusercontent.com/compliwise/capture/main/deployment/windows/install.ps1 | Invoke-Expression
     ```
 
     The script will prompt you for `API_SECRET` if it is not supplied as a parameter.
@@ -363,7 +365,7 @@ A PowerShell install script is provided at [`deployment/windows/install.ps1`](./
 
     ```powershell
     & ([scriptblock]::Create(
-        (Invoke-RestMethod https://raw.githubusercontent.com/bluewave-labs/capture/main/deployment/windows/install.ps1)
+        (Invoke-RestMethod https://raw.githubusercontent.com/compliwise/capture/main/deployment/windows/install.ps1)
     )) -APISecret "your-secret-key"
     ```
 
@@ -371,14 +373,14 @@ A PowerShell install script is provided at [`deployment/windows/install.ps1`](./
 
     ```powershell
     & ([scriptblock]::Create(
-        (Invoke-RestMethod https://raw.githubusercontent.com/bluewave-labs/capture/main/deployment/windows/install.ps1)
+        (Invoke-RestMethod https://raw.githubusercontent.com/compliwise/capture/main/deployment/windows/install.ps1)
     )) -APISecret "your-secret-key" -Port 59232 -InstallDir "C:\Program Files\Capture" -ServiceName "capture"
     ```
 
     Or download the script first and run it locally:
 
     ```powershell
-    Invoke-RestMethod https://raw.githubusercontent.com/bluewave-labs/capture/main/deployment/windows/install.ps1 -OutFile install.ps1
+    Invoke-RestMethod https://raw.githubusercontent.com/compliwise/capture/main/deployment/windows/install.ps1 -OutFile install.ps1
     Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
     .\install.ps1 -APISecret "your-secret-key"
     ```
@@ -471,19 +473,19 @@ Collectors can partially fail; when that happens the API responds with HTTP `207
 
 Our API is documented in accordance with the OpenAPI spec.
 
-You can find the OpenAPI specifications [in openapi.yml](https://github.com/bluewave-labs/capture/blob/develop/openapi.yml)
+You can find the OpenAPI specifications [in openapi.yml](https://github.com/compliwise/capture/blob/develop/openapi.yml)
 
 ## Contributing
 
 We welcome contributions! If you would like to contribute, please read the [CONTRIBUTING.md](./CONTRIBUTING.md) file for more information.
 
-<a href="https://github.com/bluewave-labs/capture/graphs/contributors">
-  <img alt="Contributors Graph" src="https://contrib.rocks/image?repo=bluewave-labs/capture" />
+<a href="https://github.com/compliwise/capture/graphs/contributors">
+  <img alt="Contributors Graph" src="https://contrib.rocks/image?repo=compliwise/capture" />
 </a>
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=bluewave-labs/capture&type=Date)](https://www.star-history.com/#bluewave-labs/capture&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=compliwise/capture&type=Date)](https://www.star-history.com/#compliwise/capture&Date)
 
 ## License
 

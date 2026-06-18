@@ -8,13 +8,13 @@
 #   sudo bash install.sh --api-secret "your-secret-key" --port 8080
 #   sudo bash install.sh --api-secret "your-secret-key" \
 #                        --install-dir /usr/local/bin       \
-#                        --service-name com.bluewavelabs.capture
+#                        --service-name com.compliwise.capture
 #
 # Options:
 #   --api-secret   <string>   Authentication key for the Capture API  (required, prompted if omitted)
 #   --port         <int>      Port the server listens on              (default: 59232)
 #   --install-dir  <path>     Directory to install the binary         (default: /usr/local/bin)
-#   --service-name <name>     launchd label and plist name            (default: com.bluewavelabs.capture)
+#   --service-name <name>     launchd label and plist name            (default: com.compliwise.capture)
 
 set -euo pipefail
 
@@ -30,7 +30,7 @@ fi
 API_SECRET=""
 PORT=59232
 INSTALL_DIR="/usr/local/bin"
-SERVICE_NAME="com.bluewavelabs.capture"
+SERVICE_NAME="com.compliwise.capture"
 PLIST_DIR="/Library/LaunchDaemons"
 
 while [[ $# -gt 0 ]]; do
@@ -58,7 +58,7 @@ step "Fetching latest release information from GitHub"
 
 RELEASE_JSON=$(curl -fsSL \
     -H "Accept: application/vnd.github+json" \
-    https://api.github.com/repos/bluewave-labs/capture/releases/latest)
+    https://api.github.com/repos/compliwise/capture/releases/latest)
 
 VERSION=$(echo "$RELEASE_JSON" | grep -m1 '"tag_name"' | cut -d'"' -f4)
 VERSION_NUM=${VERSION#v}
@@ -74,7 +74,7 @@ DOWNLOAD_URL=$(echo "$RELEASE_JSON" \
     | cut -d'"' -f4)
 
 if [[ -z "$DOWNLOAD_URL" ]]; then
-    die "Could not find asset '$ASSET_NAME' in the latest release. Check https://github.com/bluewave-labs/capture/releases/latest for available assets."
+    die "Could not find asset '$ASSET_NAME' in the latest release. Check https://github.com/compliwise/capture/releases/latest for available assets."
 fi
 
 success "Download URL: $DOWNLOAD_URL"

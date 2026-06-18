@@ -1,0 +1,30 @@
+Keystore type: JKS
+Keystore provider: SUN
+
+Your keystore contains 2 entries
+
+Alias name: compliwise-test-ca
+Creation date: Jan 15, 2024
+Entry type: trustedCertEntry
+
+Owner: CN=CompliWise Test CA, O=CompliWise
+Issuer: CN=CompliWise Test CA, O=CompliWise
+Serial number: 1a2b3c4d
+Valid from: Mon Jan 15 00:00:00 UTC 2024 until: Wed Jan 15 00:00:00 UTC 2026
+Certificate fingerprints:
+	 SHA1: AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD
+	 SHA256: 1C:F8:43:14:7E:D4:08:6A:D3:97:17:CC:C6:A3:AA:8D:2B:E6:8C:B9:01:81:6E:C7:FE:BA:0E:3D:ED:86:44:93
+Signature algorithm name: SHA256withRSA
+
+Alias name: verisign-universal-root
+Creation date: Feb 1, 2023
+Entry type: trustedCertEntry
+
+Owner: CN=VeriSign Universal Root, O=VeriSign
+Issuer: CN=VeriSign Universal Root, O=VeriSign
+Serial number: 9f8e7d6c
+Valid from: Wed Feb 01 00:00:00 UTC 2023 until: Fri Feb 01 00:00:00 UTC 2028
+Certificate fingerprints:
+	 SHA1: 11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:00:11:22:33:44
+	 SHA256: AB:CD:EF:01:23:45:67:89:AB:CD:EF:01:23:45:67:89:AB:CD:EF:01:23:45:67:89:AB:CD:EF:01:23:45:67:89
+Signature algorithm name: SHA256withRSA

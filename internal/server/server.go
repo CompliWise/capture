@@ -10,9 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/bluewave-labs/capture/internal/config"
-	"github.com/bluewave-labs/capture/internal/server/handler"
-	"github.com/bluewave-labs/capture/internal/server/middleware"
+	"github.com/compliwise/capture/internal/config"
+	"github.com/compliwise/capture/internal/server/handler"
+	"github.com/compliwise/capture/internal/server/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -78,6 +78,9 @@ func InitializeHandler(config *config.Config, metadata *handler.CaptureMeta) htt
 	apiV1.GET("/metrics/smart", metricsHandler.SmartMetrics)
 	apiV1.GET("/metrics/net", metricsHandler.MetricsNet)
 	apiV1.GET("/metrics/docker", metricsHandler.MetricsDocker)
+
+	probeHandler := handler.NewProbeHandler()
+	apiV1.POST("/certiwise/probe", probeHandler.TriggerProbe)
 
 	return r.Handler()
 }

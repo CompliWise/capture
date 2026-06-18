@@ -81,7 +81,7 @@ step "Fetching latest release information from GitHub"
 
 RELEASE_JSON=$(curl -fsSL \
     -H "Accept: application/vnd.github+json" \
-    https://api.github.com/repos/bluewave-labs/capture/releases/latest)
+    https://api.github.com/repos/compliwise/capture/releases/latest)
 
 VERSION=$(echo "$RELEASE_JSON" | grep -m1 '"tag_name"' | cut -d'"' -f4)          # e.g. v1.3.2
 VERSION_NUM=${VERSION#v}                                                            # e.g. 1.3.2
@@ -102,7 +102,7 @@ DOWNLOAD_URL=$(echo "$RELEASE_JSON" \
 
 if [[ -z "$DOWNLOAD_URL" ]]; then
     die "Could not find asset '$ASSET_NAME' in the latest release. \
-Check https://github.com/bluewave-labs/capture/releases/latest for available assets."
+Check https://github.com/compliwise/capture/releases/latest for available assets."
 fi
 
 success "Download URL: $DOWNLOAD_URL"
@@ -173,7 +173,7 @@ SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
 cat > "$SERVICE_FILE" <<EOF
 [Unit]
 Description=Capture hardware monitoring agent
-Documentation=https://github.com/bluewave-labs/capture
+Documentation=https://github.com/compliwise/capture
 After=network.target
 
 [Service]

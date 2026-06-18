@@ -2,7 +2,7 @@
 
 ## Reporting a Vulnerability
 
-To report a potential security vulnerability, please use the [GitHub private vulnerability reporting feature](https://github.com/bluewave-labs/capture/security/advisories/new).
+To report a potential security vulnerability, please use the [GitHub private vulnerability reporting feature](https://github.com/compliwise/capture/security/advisories/new).
 
 For us to respond to your report most effectively, please include:
 

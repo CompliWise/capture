@@ -13,7 +13,7 @@ This guide walks you through deploying Capture on a Kubernetes cluster using Hel
 ### 1. Clone and navigate to the Helm chart
 
 ```shell
-git clone https://github.com/bluewave-labs/capture.git
+git clone https://github.com/compliwise/capture.git
 cd capture/deployment/helm/capture
 ```
 
