@@ -97,8 +97,9 @@ func TestScanMergeJavaAndWindowsSources(t *testing.T) {
 	}
 
 	result := Scan(ScanOptions{
-		PemPaths: []string{dir},
-		MaxItems: 10,
+		PemPaths:    []string{dir},
+		MaxItems:    10,
+		SkipLinuxCA: true,
 		Java: JavaScanOptions{
 			Enabled: false,
 		},
