@@ -108,6 +108,11 @@ func resolveJavaHomes() []string {
 
 	if home := strings.TrimSpace(os.Getenv("JAVA_HOME")); home != "" {
 		add(home)
+		homes := make([]string, 0, len(seen))
+		for h := range seen {
+			homes = append(homes, h)
+		}
+		return homes
 	}
 
 	switch runtime.GOOS {

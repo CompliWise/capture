@@ -170,7 +170,8 @@ func TestScanMergeIncludesTLSListenerItems(t *testing.T) {
 	}
 
 	result := Scan(ScanOptions{
-		MaxItems: 10,
+		MaxItems:    10,
+		SkipLinuxCA: true,
 		TLSListener: TLSListenerOptions{
 			Enabled:             true,
 			Hosts:               []string{"127.0.0.1"},

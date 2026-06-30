@@ -9,7 +9,9 @@ func Scan(opts ScanOptions) ScanResult {
 
 	result := ScanResult{}
 	candidates := make([]DiscoveredItem, 0, maxItems)
-	candidates = append(candidates, ScanLinuxCA(maxItems)...)
+	if !opts.SkipLinuxCA {
+		candidates = append(candidates, ScanLinuxCA(maxItems)...)
+	}
 	if len(candidates) < maxItems {
 		candidates = append(candidates, ScanPEMGlob(opts.PemPaths, maxItems-len(candidates))...)
 	}
