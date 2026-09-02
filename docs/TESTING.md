@@ -173,7 +173,7 @@ For each combination the following steps run sequentially:
 | UsedBytes reflects the write   | `usedBytes >= 30 MB`                      |
 | UsedBytes within bounds        | `usedBytes <= totalBytes`                 |
 | UsagePercent in valid range    | `0 <= usagePct <= 1`                      |
-| UsagePercent is plausible      | `usagePct >= 0.15`                        |
+| UsagePercent is plausible      | `usagePct >= min(0.15, 0.8 * written/total)` |
 | Used + Free approximates Total | `abs(used + free - total) / total <= 10%` |
 
 ##### 7. Cleanup (deferred, runs in reverse order)
