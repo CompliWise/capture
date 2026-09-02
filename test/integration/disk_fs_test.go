@@ -182,11 +182,20 @@ func TestDiskFilesystemMetrics(t *testing.T) {
 				t.Errorf("UsagePercentage (%.4f) outside [0, 1] range", usagePct)
 			}
 
-			// After writing 30MB to a provisioned device, expect at least 15% usage.
-			// This accommodates variance across filesystem types and overhead.
-			if usagePct < 0.15 {
-				t.Errorf("UsagePercentage (%.4f) unexpectedly low after writing %dMB",
-					usagePct, testDataMB)
+			// After writing 30MB, usage should be a meaningful fraction of the
+			// reported volume. Small filesystems use a 15% floor. ZFS needs ~1GB
+			// pools (metadata overhead), so 30MB is only ~3-4% of usable capacity
+			// and the floor scales with written/total.
+			minUsage := 0.15
+			if totalBytes > 0 {
+				writtenRatio := float64(writtenBytes) / float64(totalBytes)
+				if writtenRatio < minUsage {
+					minUsage = writtenRatio * 0.8
+				}
+			}
+			if usagePct < minUsage {
+				t.Errorf("UsagePercentage (%.4f) unexpectedly low after writing %dMB (min %.4f)",
+					usagePct, testDataMB, minUsage)
 			}
 
 			// Sanity: Used + Free should approximate Total. Threshold varies by filesystem
