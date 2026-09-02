@@ -79,11 +79,11 @@ type TLSListenerOptions struct {
 
 // ScanOptions configures a discovery scan run.
 type ScanOptions struct {
-	PemPaths      []string
-	MaxItems      int
-	SkipLinuxCA   bool
-	Assignments   []AssignmentRef
-	TLSListener   TLSListenerOptions
-	Java          JavaScanOptions
-	Windows       WindowsScanOptions
+	PemPaths    []string
+	MaxItems    int
+	SkipLinuxCA bool
+	Assignments []AssignmentRef
+	TLSListener TLSListenerOptions
+	Java        JavaScanOptions
+	Windows     WindowsScanOptions
 }
