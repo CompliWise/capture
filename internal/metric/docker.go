@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/client"
+	"github.com/moby/moby/api/types/container"
+	"github.com/moby/moby/client"
 )
 
 type ContainerMetrics struct {
@@ -97,8 +97,7 @@ func GetDockerMetrics(all bool) (MetricsSlice, []CustomErr) {
 
 // initializeDockerClient creates a new Docker client with environment configuration.
 func initializeDockerClient() (*client.Client, error) {
-	// Initialize the Docker client
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	cli, err := client.New(client.FromEnv)
 	if err != nil {
 		return nil, err
 	}
@@ -107,14 +106,13 @@ func initializeDockerClient() (*client.Client, error) {
 
 // listContainers retrieves the list of containers from Docker.
 func listContainers(ctx context.Context, cli *client.Client, all bool) ([]container.Summary, error) {
-	// List all containers
-	containers, err := cli.ContainerList(ctx, container.ListOptions{
+	result, err := cli.ContainerList(ctx, client.ContainerListOptions{
 		All: all,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return containers, nil
+	return result.Items, nil
 }
 
 // processContainer processes a single container and returns its metrics.
@@ -143,7 +141,7 @@ func processContainer(ctx context.Context, cli *client.Client, container contain
 	return ContainerMetrics{
 		ContainerID:   container.ID,
 		ContainerName: getContainerName(container.Names),
-		Status:        containerInspectResponse.State.Status, // Can be one of "created", "running", "paused", "restarting", "removing", "exited", or "dead"
+		Status:        string(containerInspectResponse.State.Status), // Can be one of "created", "running", "paused", "restarting", "removing", "exited", or "dead"
 		Running:       containerInspectResponse.State.Running,
 		BaseImage:     container.Image,
 		ExposedPorts:  portList,
@@ -166,12 +164,11 @@ func processContainer(ctx context.Context, cli *client.Client, container contain
 
 // inspectContainer inspects a container and returns its detailed information.
 func inspectContainer(ctx context.Context, cli *client.Client, containerID string) (container.InspectResponse, error) {
-	// Inspect each container
-	containerInspectResponse, err := cli.ContainerInspect(ctx, containerID)
+	result, err := cli.ContainerInspect(ctx, containerID, client.ContainerInspectOptions{})
 	if err != nil {
 		return container.InspectResponse{}, err
 	}
-	return containerInspectResponse, nil
+	return result.Container, nil
 }
 
 // extractExposedPorts extracts the exposed ports from a container inspection response.
@@ -183,7 +180,7 @@ func extractExposedPorts(containerInspectResponse container.InspectResponse) []P
 	for port := range containerInspectResponse.Config.ExposedPorts {
 		portList = append(portList, Port{
 			Port:     port.Port(),
-			Protocol: port.Proto(),
+			Protocol: string(port.Proto()),
 		})
 	}
 	return portList
@@ -229,8 +226,10 @@ type dockerStatsResponse struct {
 
 // getContainerStats retrieves and decodes container statistics.
 func getContainerStats(ctx context.Context, cli *client.Client, containerID string) (dockerStatsResponse, CustomErr) {
-	// Get container stats
-	stats, err := cli.ContainerStats(ctx, containerID, false)
+	stats, err := cli.ContainerStats(ctx, containerID, client.ContainerStatsOptions{
+		Stream:                false,
+		IncludePreviousSample: true,
+	})
 	if err != nil {
 		return dockerStatsResponse{}, CustomErr{
 			Metric: []string{"docker.container.stats"},
