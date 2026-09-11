@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sort"
+	"strings"
 	"syscall"
 	"time"
 
@@ -54,6 +56,13 @@ func (s *Server) GracefulShutdown(timeout time.Duration) {
 func InitializeHandler(config *config.Config, metadata *handler.CaptureMeta) http.Handler {
 	// Initialize the Gin with default middlewares
 	r := gin.Default()
+	r.HandleMethodNotAllowed = true
+	r.NoMethod(func(c *gin.Context) {
+		if allow := allowedMethods(r, c.Request.URL.Path); allow != "" {
+			c.Header("Allow", allow)
+		}
+		c.AbortWithStatus(http.StatusMethodNotAllowed)
+	})
 	metadata.Mode = gin.Mode()
 	if gin.Mode() == gin.ReleaseMode {
 		println("running in Release Mode")
@@ -83,6 +92,25 @@ func InitializeHandler(config *config.Config, metadata *handler.CaptureMeta) htt
 	apiV1.POST("/certiwise/probe", probeHandler.TriggerProbe)
 
 	return r.Handler()
+}
+
+// allowedMethods returns the HTTP methods registered for path, for the Allow header
+// required by RFC 9110 when responding with 405 Method Not Allowed.
+func allowedMethods(r *gin.Engine, path string) string {
+	seen := make(map[string]struct{})
+	var methods []string
+	for _, route := range r.Routes() {
+		if route.Path != path {
+			continue
+		}
+		if _, ok := seen[route.Method]; ok {
+			continue
+		}
+		seen[route.Method] = struct{}{}
+		methods = append(methods, route.Method)
+	}
+	sort.Strings(methods)
+	return strings.Join(methods, ", ")
 }
 
 func NewServer(config *config.Config, handler http.Handler, metadata *handler.CaptureMeta) *Server {
