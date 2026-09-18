@@ -1,0 +1,655 @@
+{
+  "snapshot": {
+    "id": "daily-github-2026-09-11-live",
+    "collected_at_utc": "2026-09-11T12:14:29Z",
+    "collected_at_et": "2026-09-11T08:14:00-04:00",
+    "as_of_label": "Fri Sep 11, 2026 ~8am ET",
+    "baseline_date": "2026-09-10",
+    "collector": {
+      "tool": "gh",
+      "host": "github.com",
+      "gh_user": "cursor",
+      "graphql_viewer_login": "cursor[bot]",
+      "token_type": "github_app_installation",
+      "user_endpoint": {
+        "path": "/user",
+        "http_status": 403,
+        "message": "Resource not accessible by integration"
+      },
+      "user_orgs_endpoint": {
+        "path": "/user/orgs",
+        "http_status": 403,
+        "message": "Resource not accessible by integration"
+      },
+      "installation_repositories": ["CompliWise/capture"],
+      "notes": "GitHub App token can read public CompliWise metadata and public repo contents/PRs/Actions. Cannot read Dependabot, code-scanning, or secret-scanning alert APIs. Private repos appear as 404."
+    }
+  },
+  "orgs_resolved": [
+    {
+      "login": "CompliWise",
+      "exists": true,
+      "html_url": "https://github.com/CompliWise",
+      "description": "The world's first end-to-end AI compliance automation platform.",
+      "two_factor_requirement_enabled": null,
+      "members_can_create_public_repos": null,
+      "default_repository_permission": null
+    },
+    {
+      "login": "veladent-tech",
+      "exists": true,
+      "type": "Organization",
+      "html_url": "https://github.com/veladent-tech",
+      "description": "Practice management software built for how dental teams actually work.",
+      "public_repo_count_visible": 0
+    },
+    {
+      "login": "PeopleWise",
+      "exists": true,
+      "visible_public_repos": ["PeopleWise/hpes"],
+      "note": "Unrelated 2013 public repo; not the CompliWise peoplewise app."
+    },
+    {
+      "login": "peoplewise-ch",
+      "exists": true,
+      "visible_public_repos": []
+    },
+    {
+      "login": "CompliWise-App",
+      "exists": false,
+      "http_status": 404
+    }
+  ],
+  "public_compliwise_repos": [
+    {
+      "full_name": "CompliWise/capture",
+      "visibility": "public",
+      "fork": false,
+      "html_url": "https://github.com/CompliWise/capture"
+    },
+    {
+      "full_name": "CompliWise/llm-proxy",
+      "visibility": "public",
+      "fork": true,
+      "parent": "Instawork/llm-proxy",
+      "html_url": "https://github.com/CompliWise/llm-proxy"
+    }
+  ],
+  "public_visibility": {
+    "capture_still_public": true,
+    "llm_proxy_still_public": true,
+    "other_public_compliwise_repos": []
+  },
+  "searches": {
+    "gh_repo_list_CompliWise": ["CompliWise/llm-proxy", "CompliWise/capture"],
+    "search_repositories_org_CompliWise": ["CompliWise/capture"],
+    "peoplewise_org_CompliWise": [],
+    "veladent_org_CompliWise": [],
+    "compliwise-app_owner_CompliWise": [],
+    "certiwise_public_hits_unrelated": [
+      "rom213/Certiwise",
+      "Saahilvrma/certiwise-blog-site-frontend"
+    ]
+  },
+  "baseline_2026_09_10": {
+    "capture": {
+      "dependabot_open": 4,
+      "codeql_open": 1,
+      "codeql_note": "#1",
+      "head": "9c95d9c"
+    },
+    "peoplewise": {
+      "dependabot_open": 4,
+      "severity": {"medium": 4},
+      "head": "e59e80e"
+    },
+    "compliwise-app": {
+      "dependabot_open": 81,
+      "severity": {"critical": 3, "high": 40, "medium": 32, "low": 6},
+      "head": "8ee76ce8"
+    },
+    "veladent": {
+      "dependabot_open": 126,
+      "severity": {"critical": 1, "high_approx": 55},
+      "head": "e96676d"
+    },
+    "compliclient": {"dependabot_open": 20},
+    "llm-proxy": {"dependabot_open": 31},
+    "package-testing-service": {"dependabot_open": 96},
+    "CompliWise-App-Service": {"dependabot_open": 10},
+    "portal": {"dependabot_open": 0},
+    "certiwise-pki-admin": {"dependabot": "disabled"},
+    "secret_scanning": "OFF",
+    "notes": {
+      "murshid": "Veladent critical PR #28 held for multi-currency; Capture remaining 4 in PR #6"
+    }
+  },
+  "repos": [
+    {
+      "requested": "CompliWise/capture",
+      "resolved": "CompliWise/capture",
+      "access": "ok",
+      "http_status": 200,
+      "private": false,
+      "visibility": "public",
+      "archived": false,
+      "disabled": false,
+      "fork": false,
+      "default_branch": "develop",
+      "pushed_at": "2026-09-08T22:44:10Z",
+      "head": {
+        "branch": "develop",
+        "sha": "9c95d9cbaee4da05cff8e1f42d3a8535fdaa2ee5",
+        "sha_short": "9c95d9c",
+        "committed_at": "2026-09-02T07:46:54Z",
+        "message": "Merge pull request #5 from CompliWise/dependabot/go_modules/golang.org/x/net-0.55.0",
+        "vs_baseline": "unchanged"
+      },
+      "security_and_analysis": null,
+      "has_vulnerability_alerts_enabled": true,
+      "is_security_policy_enabled": true,
+      "dependabot": {
+        "alerts_endpoint": "/repos/CompliWise/capture/dependabot/alerts?state=open&per_page=100",
+        "http_status": 403,
+        "message": "Resource not accessible by integration",
+        "required_permission": "vulnerability_alerts=read",
+        "open_count": null,
+        "by_severity": null,
+        "graphql_vulnerability_alerts_open_totalCount": 0,
+        "graphql_totalCount_trusted": false,
+        "dependabot_updates_workflow": "active",
+        "dependency_graph_workflow": "active",
+        "dependabot_yml_present": false
+      },
+      "code_scanning": {
+        "alerts_endpoint": "/repos/CompliWise/capture/code-scanning/alerts?state=open&per_page=100",
+        "http_status": 403,
+        "message": "Resource not accessible by integration",
+        "required_permission": "security_events=read",
+        "open_count": null,
+        "workflow": "CodeQL Advanced",
+        "workflow_state": "active",
+        "last_develop_run": {
+          "conclusion": "success",
+          "created_at": "2026-09-02T07:46:58Z",
+          "head_sha_short": "9c95d9c",
+          "event": "push"
+        }
+      },
+      "secret_scanning": {
+        "alerts_http_status": 403,
+        "required_permission": "secret_scanning_alerts=read",
+        "enabled": null
+      },
+      "go_mod_on_default_head": {
+        "docker_docker": "v28.1.1+incompatible",
+        "golang_org_x_net": "v0.55.0",
+        "golang_org_x_crypto": "v0.52.0"
+      },
+      "vs_baseline": {
+        "dependabot_old": 4,
+        "dependabot_new": null,
+        "dependabot_delta": null,
+        "codeql_old": 1,
+        "codeql_new": null,
+        "codeql_delta": null,
+        "head_old": "9c95d9c",
+        "head_new": "9c95d9c",
+        "trend": "unchanged_head_alerts_unverified"
+      }
+    },
+    {
+      "requested": "CompliWise/peoplewise",
+      "resolved": null,
+      "access": "not_found",
+      "http_status": 404,
+      "names_tried": [
+        "CompliWise/peoplewise",
+        "CompliWise/PeopleWise",
+        "CompliWise/people-wise",
+        "CompliWise/People-Wise",
+        "peoplewise/peoplewise",
+        "PeopleWise/peoplewise"
+      ],
+      "search_notes": "PeopleWise org exists but only public repo is PeopleWise/hpes. peoplewise-ch org has no visible public repos.",
+      "dependabot": {"open_count": null, "http_status": 404},
+      "vs_baseline": {
+        "dependabot_old": 4,
+        "dependabot_new": null,
+        "dependabot_delta": null,
+        "head_old": "e59e80e",
+        "head_new": null,
+        "trend": "unknown_inaccessible"
+      }
+    },
+    {
+      "requested": "CompliWise/compliwise-app",
+      "resolved": null,
+      "access": "not_found",
+      "http_status": 404,
+      "names_tried": [
+        "CompliWise/compliwise-app",
+        "CompliWise/CompliWise-App",
+        "CompliWise/Compliwise-App",
+        "CompliWise-App/compliwise-app",
+        "CompliWise/app",
+        "CompliWise/compliwise",
+        "CompliWise/CompliWise"
+      ],
+      "dependabot": {"open_count": null, "http_status": 404},
+      "vs_baseline": {
+        "dependabot_old": 81,
+        "dependabot_old_severity": {"critical": 3, "high": 40, "medium": 32, "low": 6},
+        "dependabot_new": null,
+        "dependabot_delta": null,
+        "head_old": "8ee76ce8",
+        "head_new": null,
+        "trend": "unknown_inaccessible"
+      }
+    },
+    {
+      "requested": "veladent-tech/veladent",
+      "resolved": null,
+      "access": "not_found",
+      "http_status": 404,
+      "org_exists": true,
+      "org_public_repo_count_visible": 0,
+      "names_tried": [
+        "veladent-tech/veladent",
+        "Veladent-tech/veladent",
+        "veladent-tech/VelaDent",
+        "veladent-tech/Veladent",
+        "veladent-tech/vela",
+        "veladent-tech/app",
+        "veladent-tech/veladent-app",
+        "veladent-tech/veladent-web",
+        "veladent-tech/backend",
+        "veladent-tech/frontend",
+        "veladent-tech/api",
+        "veladent-tech/core",
+        "veladent-tech/monorepo",
+        "veladent-tech/practice",
+        "veladent/veladent",
+        "CompliWise/veladent",
+        "CompliWise/vela",
+        "CompliWise/veladent-tech"
+      ],
+      "dependabot": {"open_count": null, "http_status": 404},
+      "vs_baseline": {
+        "dependabot_old": 126,
+        "dependabot_old_severity": {"critical": 1, "high_approx": 55},
+        "dependabot_new": null,
+        "dependabot_delta": null,
+        "head_old": "e96676d",
+        "head_new": null,
+        "trend": "unknown_inaccessible"
+      }
+    },
+    {
+      "requested": "CompliWise/compliclient",
+      "resolved": null,
+      "access": "not_found",
+      "http_status": 404,
+      "names_tried": ["CompliWise/compliclient", "CompliWise/CompliClient", "CompliWise/compliclient-app", "CompliWise/client"],
+      "dependabot": {"open_count": null, "http_status": 404},
+      "vs_baseline": {
+        "dependabot_old": 20,
+        "dependabot_new": null,
+        "dependabot_delta": null,
+        "trend": "unknown_inaccessible"
+      }
+    },
+    {
+      "requested": "CompliWise/llm-proxy",
+      "resolved": "CompliWise/llm-proxy",
+      "access": "ok",
+      "http_status": 200,
+      "private": false,
+      "visibility": "public",
+      "archived": false,
+      "disabled": false,
+      "fork": true,
+      "parent": "Instawork/llm-proxy",
+      "default_branch": "main",
+      "pushed_at": "2026-09-09T17:24:06Z",
+      "head_default": {
+        "branch": "main",
+        "sha": "3986651fae14ef7e0a79ac1973736b612b3c90af",
+        "sha_short": "3986651",
+        "committed_at": "2026-06-26T16:12:38Z"
+      },
+      "head_develop": {
+        "branch": "develop",
+        "sha": "830c1c40129f6779bffa84eed5517fbecce2804f",
+        "sha_short": "830c1c4",
+        "committed_at": "2026-09-09T17:24:06Z",
+        "message": "Merge pull request #3 from jmarcbalbada/feat/admin-api-portal-bff"
+      },
+      "security_and_analysis": null,
+      "has_vulnerability_alerts_enabled": true,
+      "is_security_policy_enabled": false,
+      "dependabot": {
+        "alerts_endpoint": "/repos/CompliWise/llm-proxy/dependabot/alerts?state=open&per_page=100",
+        "http_status": 403,
+        "message": "Resource not accessible by integration",
+        "required_permission": "vulnerability_alerts=read",
+        "open_count": null,
+        "by_severity": null,
+        "graphql_vulnerability_alerts_open_totalCount": 0,
+        "graphql_totalCount_trusted": false,
+        "dependency_graph_workflow": "active"
+      },
+      "code_scanning": {"http_status": 403, "open_count": null},
+      "secret_scanning": {"alerts_http_status": 403, "enabled": null},
+      "vs_baseline": {
+        "dependabot_old": 31,
+        "dependabot_new": null,
+        "dependabot_delta": null,
+        "trend": "visibility_unchanged_alerts_unverified_develop_moved"
+      }
+    },
+    {
+      "requested": "CompliWise/package-testing-service",
+      "resolved": null,
+      "access": "not_found",
+      "http_status": 404,
+      "names_tried": ["CompliWise/package-testing-service", "CompliWise/package-testing"],
+      "dependabot": {"open_count": null, "http_status": 404},
+      "vs_baseline": {
+        "dependabot_old": 96,
+        "dependabot_new": null,
+        "dependabot_delta": null,
+        "trend": "unknown_inaccessible"
+      }
+    },
+    {
+      "requested": "CompliWise/CompliWise-App-Service",
+      "resolved": null,
+      "access": "not_found",
+      "http_status": 404,
+      "names_tried": ["CompliWise/CompliWise-App-Service", "CompliWise/app-service"],
+      "dependabot": {"open_count": null, "http_status": 404},
+      "vs_baseline": {
+        "dependabot_old": 10,
+        "dependabot_new": null,
+        "dependabot_delta": null,
+        "trend": "unknown_inaccessible"
+      }
+    },
+    {
+      "requested": "CompliWise/portal-certiwise-admin",
+      "resolved": null,
+      "access": "not_found",
+      "http_status": 404,
+      "names_tried": [
+        "CompliWise/portal-certiwise-admin",
+        "CompliWise/portal",
+        "CompliWise/certiwise-admin",
+        "CompliWise/portal-certiwise",
+        "CompliWise/certiwise-portal",
+        "CompliWise/pki-admin",
+        "CompliWise/portal-admin",
+        "CompliWise/admin",
+        "CompliWise/portal-admin-certiwise"
+      ],
+      "dependabot": {"open_count": null, "http_status": 404},
+      "vs_baseline": {
+        "dependabot_old": 0,
+        "dependabot_new": null,
+        "dependabot_delta": null,
+        "trend": "unknown_inaccessible"
+      }
+    },
+    {
+      "requested": "certiwise-pki-admin",
+      "resolved": null,
+      "access": "not_found",
+      "http_status": 404,
+      "names_tried": [
+        "CompliWise/certiwise-pki-admin",
+        "CompliWise/certiwise-pki",
+        "CompliWise/certiwise",
+        "CompliWise/pki",
+        "CompliWise/PKI",
+        "certiwise/certiwise-pki-admin",
+        "CertiWise/certiwise-pki-admin"
+      ],
+      "dependabot": {"open_count": null, "http_status": 404, "disabled_confirmed": null},
+      "vs_baseline": {
+        "dependabot_old": "disabled",
+        "dependabot_new": null,
+        "trend": "unknown_not_found"
+      }
+    }
+  ],
+  "pull_requests": {
+    "capture_6": {
+      "repo": "CompliWise/capture",
+      "number": 6,
+      "html_url": "https://github.com/CompliWise/capture/pull/6",
+      "title": "fix(deps): replace deprecated docker/docker SDK with patched Moby client",
+      "state": "open",
+      "merged": false,
+      "merged_at": null,
+      "draft": false,
+      "user": "murshidazher",
+      "created_at": "2026-09-08T22:36:33Z",
+      "updated_at": "2026-09-09T14:23:48Z",
+      "base": "develop",
+      "head": "fix/dependabot-moby-client",
+      "head_sha_short": "303035b",
+      "commits": 2,
+      "additions": 139,
+      "deletions": 107,
+      "changed_files": 6,
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "compare_to_develop": {"status": "ahead", "ahead_by": 2, "behind_by": 0},
+      "review": {
+        "state": "APPROVED",
+        "user": "jammiguelyfish",
+        "submitted_at": "2026-09-09T14:23:48Z"
+      },
+      "body_excerpt": "github.com/docker/docker v28 has no patched release for the four open GHSAs, so switch container metrics to github.com/moby/moby/client and api.",
+      "vs_baseline": "still_open"
+    },
+    "veladent_28": {
+      "repo_requested": "veladent-tech/veladent",
+      "number": 28,
+      "http_status": 404,
+      "state": null,
+      "merged": null,
+      "note": "Repo and PR not visible. Alternate orgs 404. Baseline (held for multi-currency) not re-verified.",
+      "vs_baseline": "unknown"
+    }
+  },
+  "recent_merges_24_48h": [
+    {
+      "repo": "CompliWise/llm-proxy",
+      "number": 3,
+      "title": "feat(admin): mount admin API in portal-BFF-only mode (no Google OAuth)",
+      "state": "closed",
+      "merged": true,
+      "merged_at": "2026-09-09T17:24:06Z",
+      "merged_by": "murshidazher",
+      "author": "jmarcbalbada",
+      "base": "develop",
+      "html_url": "https://github.com/CompliWise/llm-proxy/pull/3"
+    },
+    {
+      "repo": "CompliWise/llm-proxy",
+      "number": 2,
+      "title": "CompliWise integration: api↔gateway key sync + OTLP logs export",
+      "state": "closed",
+      "merged": true,
+      "merged_at": "2026-09-08T22:53:33Z",
+      "merged_by": "murshidazher",
+      "author": "jmarcbalbada",
+      "base": "develop",
+      "html_url": "https://github.com/CompliWise/llm-proxy/pull/2"
+    }
+  ],
+  "other_open_prs_visible": [
+    {
+      "repo": "CompliWise/llm-proxy",
+      "number": 4,
+      "title": "fix(providers): strip upstream CORS headers to prevent duplicate Access-Control-Allow-Origin",
+      "state": "open",
+      "created_at": "2026-09-09T17:56:56Z",
+      "author": "jmarcbalbada",
+      "base": "develop"
+    },
+    {
+      "repo": "CompliWise/capture",
+      "number": 3,
+      "title": "Add Linux deployment README",
+      "state": "open",
+      "author": "shrv01",
+      "note": "Not security-related; open since 2026-08-24"
+    }
+  ],
+  "heads": {
+    "CompliWise/capture": {"branch": "develop", "sha_short": "9c95d9c", "sha": "9c95d9cbaee4da05cff8e1f42d3a8535fdaa2ee5", "vs_baseline": "unchanged"},
+    "CompliWise/llm-proxy": {
+      "default": {"branch": "main", "sha_short": "3986651", "sha": "3986651fae14ef7e0a79ac1973736b612b3c90af"},
+      "develop": {"branch": "develop", "sha_short": "830c1c4", "sha": "830c1c40129f6779bffa84eed5517fbecce2804f"}
+    },
+    "peoplewise": {"sha_short": null, "http_status": 404, "baseline": "e59e80e"},
+    "compliwise-app": {"sha_short": null, "http_status": 404, "baseline": "8ee76ce8"},
+    "veladent": {"sha_short": null, "http_status": 404, "baseline": "e96676d"}
+  },
+  "two_factor": {
+    "endpoint": "/orgs/CompliWise/members?filter=2fa_disabled",
+    "http_status": 422,
+    "message": "Only owners can use this filter.",
+    "members_list_http_status": 200,
+    "members_visible": [],
+    "public_members_visible": [],
+    "gaps": null
+  },
+  "org_dependabot_alerts": {
+    "endpoint": "/orgs/CompliWise/dependabot/alerts?state=open&per_page=5",
+    "http_status": 403,
+    "required_permission": "vulnerability_alerts=read"
+  },
+  "comparison_table": [
+    {
+      "repo": "CompliWise/capture Dependabot",
+      "old": 4,
+      "new": null,
+      "new_status": "403",
+      "delta": null,
+      "trend": "unchanged_head_alerts_unverified"
+    },
+    {
+      "repo": "CompliWise/capture CodeQL",
+      "old": 1,
+      "new": null,
+      "new_status": "403",
+      "delta": null,
+      "trend": "unchanged_head_alerts_unverified"
+    },
+    {
+      "repo": "CompliWise/peoplewise",
+      "old": 4,
+      "new": null,
+      "new_status": "404",
+      "delta": null,
+      "trend": "unknown_inaccessible"
+    },
+    {
+      "repo": "CompliWise/compliwise-app",
+      "old": 81,
+      "new": null,
+      "new_status": "404",
+      "delta": null,
+      "trend": "unknown_inaccessible"
+    },
+    {
+      "repo": "veladent-tech/veladent",
+      "old": 126,
+      "new": null,
+      "new_status": "404",
+      "delta": null,
+      "trend": "unknown_inaccessible"
+    },
+    {
+      "repo": "CompliWise/compliclient",
+      "old": 20,
+      "new": null,
+      "new_status": "404",
+      "delta": null,
+      "trend": "unknown_inaccessible"
+    },
+    {
+      "repo": "CompliWise/llm-proxy",
+      "old": 31,
+      "new": null,
+      "new_status": "403",
+      "delta": null,
+      "trend": "visibility_unchanged_alerts_unverified"
+    },
+    {
+      "repo": "CompliWise/package-testing-service",
+      "old": 96,
+      "new": null,
+      "new_status": "404",
+      "delta": null,
+      "trend": "unknown_inaccessible"
+    },
+    {
+      "repo": "CompliWise/CompliWise-App-Service",
+      "old": 10,
+      "new": null,
+      "new_status": "404",
+      "delta": null,
+      "trend": "unknown_inaccessible"
+    },
+    {
+      "repo": "portal",
+      "old": 0,
+      "new": null,
+      "new_status": "404",
+      "delta": null,
+      "trend": "unknown_inaccessible"
+    },
+    {
+      "repo": "certiwise-pki-admin",
+      "old": "dependabot_disabled",
+      "new": null,
+      "new_status": "404",
+      "delta": null,
+      "trend": "unknown_not_found"
+    }
+  ],
+  "trends": {
+    "improved": [
+      "capture#6 approved 2026-09-09 by jammiguelyfish (still unmerged)",
+      "llm-proxy#2 merged 2026-09-08T22:53:33Z",
+      "llm-proxy#3 merged 2026-09-09T17:24:06Z"
+    ],
+    "worsened": [],
+    "unchanged_verified": [
+      "CompliWise/capture still public",
+      "CompliWise/llm-proxy still public",
+      "capture develop HEAD still 9c95d9c",
+      "capture#6 still open"
+    ],
+    "unknown": [
+      "all Dependabot/CodeQL/secret-scanning counts",
+      "veladent#28 status",
+      "peoplewise/compliwise-app/veladent HEADs",
+      "2FA member gaps",
+      "secret scanning on/off"
+    ]
+  },
+  "remaining_open_items": [
+    "Merge capture#6 (approved; remaining docker/docker GHSAs on develop)",
+    "Re-check capture CodeQL open count with security_events permission (baseline #1; HEAD unchanged)",
+    "Confirm veladent-tech/veladent#28 (404 this token; baseline held for multi-currency)",
+    "Refresh private-repo Dependabot totals (peoplewise 4, app 81, veladent 126, compliclient 20, llm-proxy 31, package-testing-service 96, App-Service 10, portal 0)",
+    "Confirm secret scanning on/off (baseline OFF; setting not readable)",
+    "Org-owner 2FA-disabled member audit"
+  ],
+  "email_draft_not_sent": "Subject: GitHub security snapshot — 11 Sep 2026 (live)\n\nHi all —\n\nThank you for the continued progress this week. On Capture, Dependabot #4/#5 are already on develop, and Murshid’s follow-up PR #6 (Moby client, covering the remaining docker/docker GHSAs) is approved with green CI — it just still needs to land. On llm-proxy, #2 and #3 merged into develop (API/gateway sync, admin API in portal-BFF mode); #4 (CORS header) is the leftover open PR there.\n\nA few concerns remain:\n\n1) Capture #6 is still open, so the four docker/docker alerts on develop are likely still live until that merge.\n2) We could not re-check Veladent #28 (the critical / multi-currency hold) or any of the private app/peoplewise/service repos from this token — yesterday’s larger backlogs (especially compliwise-app ~81 and veladent ~126) are unverified today, not cleared.\n3) Secret scanning still cannot be confirmed on; 2FA-disabled member review needs an org owner.\n\nIf someone with org/repo security access can merge Capture #6, share the current state of Veladent #28, and turn on secret scanning (or confirm it), we can produce a complete count snapshot on the next pass.\n\nThanks again —\n"
+}
