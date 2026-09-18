@@ -26,11 +26,12 @@ func RunCheck(ctx context.Context, monitor Monitor, userAgent string) CheckResul
 	var peerCerts []*x509.Certificate
 	var negotiatedVersion uint16
 	tlsConfig := &tls.Config{
-		MinVersion:         tlsMinVersion(monitor.Assertions.MinTLSVersion),
-		ServerName:         serverNameFromURL(monitor.URL),
-		InsecureSkipVerify: true,
-		VerifyPeerCertificate: func(rawCerts [][]byte, _ [][]*x509.Certificate) error {
-			peerCerts = parsePeerCertificates(rawCerts)
+		MinVersion: tlsMinVersion(monitor.Assertions.MinTLSVersion),
+		ServerName: serverNameFromURL(monitor.URL),
+		VerifyConnection: func(cs tls.ConnectionState) error {
+			if len(cs.PeerCertificates) > 0 {
+				peerCerts = cs.PeerCertificates
+			}
 			return nil
 		},
 	}
