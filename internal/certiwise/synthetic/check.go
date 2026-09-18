@@ -223,18 +223,6 @@ func certSANNames(cert *x509.Certificate) []string {
 	return names
 }
 
-func parsePeerCertificates(rawCerts [][]byte) []*x509.Certificate {
-	certs := make([]*x509.Certificate, 0, len(rawCerts))
-	for _, raw := range rawCerts {
-		cert, err := x509.ParseCertificate(raw)
-		if err != nil {
-			continue
-		}
-		certs = append(certs, cert)
-	}
-	return certs
-}
-
 func tlsMinVersion(version string) uint16 {
 	switch strings.TrimSpace(version) {
 	case "1.0":
